@@ -26,7 +26,9 @@ export default function ExcelMatrix({
   const [match1IdState, setMatch1IdState] = useState<string>('');
   const [match2IdState, setMatch2IdState] = useState<string>('');
   const [downloading, setDownloading] = useState(false);
+  const [downloadingFull, setDownloadingFull] = useState(false);
   const screenshotRef = useRef<HTMLDivElement>(null);
+  const fullTableRef = useRef<HTMLDivElement>(null);
 
   const startEditCell = (pId: string, mId: string) => {
     setEditingCell({ pId, mId });
@@ -116,6 +118,65 @@ export default function ExcelMatrix({
       alert('Có lỗi xảy ra khi tạo ảnh. Bạn hãy thử chụp màn hình gốc của máy hoặc click lại nhé!');
     } finally {
       setDownloading(false);
+    }
+  };
+
+  const handleDownloadFullTable = async () => {
+    if (!fullTableRef.current) return;
+    setDownloadingFull(true);
+    try {
+      // Small delay to make sure rendering states are quiet
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      
+      const element = fullTableRef.current;
+      const scrollContainer = element.querySelector('.overflow-x-auto') as HTMLDivElement;
+      const table = element.querySelector('table') as HTMLTableElement;
+      
+      if (!scrollContainer || !table) {
+        throw new Error("Table elements not found");
+      }
+
+      // Keep original layout styles
+      const originalScrollOverflow = scrollContainer.style.overflowX;
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      
+      // Compute actual full wide size of the table matrix
+      const targetWidth = table.scrollWidth + 16; 
+      const targetHeight = element.scrollHeight;
+
+      // Expand to wide layout for high-res rendering capture
+      scrollContainer.style.overflowX = 'visible';
+      element.style.width = `${targetWidth}px`;
+      element.style.maxWidth = 'none';
+
+      const dataUrl = await toPng(element, {
+        backgroundColor: '#FFFFFF',
+        pixelRatio: 2, // High clarity double-density capture
+        width: targetWidth,
+        height: targetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${targetWidth}px`,
+          height: `${targetHeight}px`,
+        }
+      });
+
+      // Instantly restore responsive scaling for browser view
+      scrollContainer.style.overflowX = originalScrollOverflow;
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+
+      const link = document.createElement('a');
+      link.download = `Bang_Du_Doan_PKT_Tat_Ca_Tran.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Error generating full chart image:', error);
+      alert('Có lỗi xảy ra khi xuất ảnh bảng đầy đủ. Bạn hãy thử chụp màn hình nhé!');
+    } finally {
+      setDownloadingFull(false);
     }
   };
 
@@ -415,8 +476,45 @@ export default function ExcelMatrix({
       </div>
       ) : (
         <>
-          {/* EXPLANATORY HEADER & TOOLTIP */}
-          <div className="bg-white rounded-xl border-4 border-[#1E293B] p-5 shadow-[6px_6px_0px_#1E293B] space-y-4" id="excel-matrix-help">
+          {/* CONTROL PANEL TO EXPORT TO IMAGE (NOT CAPTURED) */}
+          <div className="bg-[#EEF2F6] rounded-xl border-4 border-[#1E293B] p-4.5 shadow-[4px_4px_0px_#1E293B] flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in mb-4">
+            <div className="space-y-1 text-center md:text-left">
+              <h4 className="font-sans font-black text-xs md:text-sm text-slate-900 uppercase italic tracking-tight flex items-center justify-center md:justify-start gap-1.5">
+                📸 BẢN XUẤT ẢNH TRỌN BỘ SPREADSHEET CHO ZALO NHÓM
+              </h4>
+              <p className="text-[10px] text-slate-600 font-extrabold uppercase leading-normal">
+                Hệ thống tự động mở rộng mọi cột bị che khuất và tải về toàn bộ 28 thành viên PKT với tất cả trận đấu dưới dạng ảnh HD.
+              </p>
+            </div>
+            
+            <button
+              onClick={handleDownloadFullTable}
+              disabled={downloadingFull}
+              className="w-full md:w-auto flex items-center justify-center gap-1.5 py-2 px-5 text-[11px] font-black uppercase tracking-wider rounded border-2 border-slate-950 bg-indigo-600 text-white shadow-[2px_2px_0px_#000] hover:bg-slate-950 hover:text-white disabled:opacity-50 disabled:cursor-wait active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+            >
+              <Download className="w-4 h-4" />
+              {downloadingFull ? 'ĐANG TẠO FILE...' : '📥 TẢI ẢNH BẢNG ĐẦY ĐỦ (PNG)'}
+            </button>
+          </div>
+
+          <div ref={fullTableRef} className="bg-white p-5 rounded-xl border-4 border-[#1E293B] space-y-4 shadow-[6px_6px_0px_rgba(0,0,0,0.15)]">
+            {/* BRANDING TITLE INSIDE THE CAPTURED FILE */}
+            <div className="bg-[#1E293B] p-3 rounded-lg text-white flex flex-col sm:flex-row items-center justify-between gap-2 border-2 border-slate-950 shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+              <div className="text-center sm:text-left">
+                <h4 className="font-sans font-black text-xs md:text-sm uppercase italic tracking-tight text-yellow-300">
+                  ⚽ BẢNG CHECK VOTE DỰ ĐOÁN ĐỒNG BÀNG - GIA ĐÌNH PKT VN
+                </h4>
+                <p className="text-[9px] text-[#38BDF8] font-bold uppercase tracking-wide">
+                  Cập nhật tự động • Không bỏ sót bất kỳ lựa chọn của thành viên nào
+                </p>
+              </div>
+              <div className="text-[9px] font-mono font-black uppercase bg-[#000]/30 px-2.5 py-1 rounded border border-[#38BDF8]/40 text-[#38BDF8]">
+                BÁO CÁO FULL TRẬN ĐẤU 🏆
+              </div>
+            </div>
+
+            {/* EXPLANATORY HEADER & TOOLTIP */}
+            <div className="bg-white rounded-xl border-2 border-[#1E293B] p-4.5 space-y-4" id="excel-matrix-help">
         <div className="flex items-start gap-3">
           <div className="p-2.5 bg-indigo-500 rounded border-2 border-slate-900 text-white shrink-0 mt-0.5 shadow-[2px_2px_0px_#000]">
             <Info className="w-5 h-5" />
@@ -617,6 +715,7 @@ export default function ExcelMatrix({
           </table>
         </div>
       </div>
+          </div>
         </>
       )}
 
