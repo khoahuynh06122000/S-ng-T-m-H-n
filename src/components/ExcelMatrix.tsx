@@ -27,8 +27,10 @@ export default function ExcelMatrix({
   const [match2IdState, setMatch2IdState] = useState<string>('');
   const [downloading, setDownloading] = useState(false);
   const [downloadingFull, setDownloadingFull] = useState(false);
+  const [downloadingFocused, setDownloadingFocused] = useState(false);
   const screenshotRef = useRef<HTMLDivElement>(null);
   const fullTableRef = useRef<HTMLDivElement>(null);
+  const focusedTableRef = useRef<HTMLDivElement>(null);
 
   const startEditCell = (pId: string, mId: string) => {
     setEditingCell({ pId, mId });
@@ -84,6 +86,107 @@ export default function ExcelMatrix({
   const halfLength = Math.ceil(participants.length / 2);
   const leftParticipants = participants.slice(0, halfLength);
   const rightParticipants = participants.slice(halfLength);
+
+  // Find the index of the most recently finished match
+  const getCenterIndex = () => {
+    let lastCompletedIndex = -1;
+    for (let i = matches.length - 1; i >= 0; i--) {
+      if (matches[i].scoreA !== null && matches[i].scoreB !== null) {
+        lastCompletedIndex = i;
+        break;
+      }
+    }
+    return lastCompletedIndex !== -1 ? lastCompletedIndex : 0;
+  };
+
+  const centerIndex = getCenterIndex();
+
+  const getFocusedMatches = () => {
+    if (matches.length <= 5) return matches;
+    
+    // 2 before, 1 center, 2 after
+    let startIndex = centerIndex - 2;
+    let endIndex = centerIndex + 2;
+    
+    // Clamp to bounds
+    if (startIndex < 0) {
+      startIndex = 0;
+      endIndex = 4;
+    }
+    if (endIndex >= matches.length) {
+      endIndex = matches.length - 1;
+      startIndex = endIndex - 4;
+    }
+    
+    if (startIndex < 0) startIndex = 0;
+    
+    return matches.slice(startIndex, endIndex + 1);
+  };
+
+  const focusedMatches = getFocusedMatches();
+
+  const handleDownloadFocusedTable = async () => {
+    if (!focusedTableRef.current) return;
+    setDownloadingFocused(true);
+    try {
+      // Small delay to make sure rendering states are quiet
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      
+      const element = focusedTableRef.current;
+      const scrollContainer = element.querySelector('.overflow-x-auto') as HTMLDivElement;
+      const table = element.querySelector('table') as HTMLTableElement;
+      
+      if (!scrollContainer || !table) {
+        throw new Error("Table elements not found");
+      }
+
+      // Record original style fields
+      const originalScrollOverflow = scrollContainer.style.overflowX;
+      const originalWidth = element.style.width;
+      const originalMaxWidth = element.style.maxWidth;
+      
+      // Calculate true dimensions of the 5-match focused matrix table
+      const targetWidth = table.scrollWidth + 16; 
+      const targetHeight = element.scrollHeight;
+
+      // Expand to wide layout for high-res rendering capture
+      scrollContainer.style.overflowX = 'visible';
+      element.style.width = `${targetWidth}px`;
+      element.style.maxWidth = 'none';
+
+      const dataUrl = await toPng(element, {
+        backgroundColor: '#FFFFFF',
+        pixelRatio: 2, // Double-density high-res
+        width: targetWidth,
+        height: targetHeight,
+        style: {
+          transform: 'scale(1)',
+          transformOrigin: 'top left',
+          width: `${targetWidth}px`,
+          height: `${targetHeight}px`,
+        }
+      });
+
+      // Restore style properties immediately
+      scrollContainer.style.overflowX = originalScrollOverflow;
+      element.style.width = originalWidth;
+      element.style.maxWidth = originalMaxWidth;
+
+      // Find center match name for the output file
+      const centerMatch = matches[centerIndex] || matches[0];
+      const matchLabel = centerMatch ? `${centerMatch.teamA.split(' ')[0]}_vs_${centerMatch.teamB.split(' ')[0]}` : 'Tieudiem';
+
+      const link = document.createElement('a');
+      link.download = `Du_Doan_PKT_Tieu_Diem_${matchLabel}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Error generating focused chart image:', error);
+      alert('Có lỗi xảy ra khi xuất ảnh tiêu điểm. Bạn hãy thử chụp màn hình nhé!');
+    } finally {
+      setDownloadingFocused(false);
+    }
+  };
 
   const handleDownloadImage = async () => {
     if (!screenshotRef.current) return;
@@ -476,25 +579,198 @@ export default function ExcelMatrix({
       </div>
       ) : (
         <>
+          {/* OFFSCREEN HIGH-RES RENDER COMPONENT FOR 5-MATCH ZALO CAPTURE */}
+          <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1000px' }}>
+            <div ref={focusedTableRef} className="bg-white p-5 rounded-xl border-4 border-[#1E293B] space-y-4 shadow-[6px_6px_0px_rgba(0,0,0,0.15)] select-none">
+              {/* BRANDING TITLE INSIDE THE CAPTURED FILE */}
+              <div className="bg-[#111827] p-3.5 rounded-lg text-white flex flex-col sm:flex-row items-center justify-between gap-2.5 border-2 border-slate-950 shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+                <div className="text-center sm:text-left">
+                  <h4 className="font-sans font-black text-xs md:text-sm uppercase italic tracking-tight text-yellow-450 text-yellow-400 flex items-center gap-1.5 justify-center sm:justify-start">
+                    ⚽ BẢNG VOTE 5 TRẬN TIÊU ĐIỂM - GIA ĐÌNH PKT VN 🏆
+                  </h4>
+                  <p className="text-[9px] text-[#38BDF8] font-extrabold uppercase tracking-wide">
+                    Tiêu điểm trận vừa kết thúc & các trận đấu lân cận (Tổng 5 trận)
+                  </p>
+                </div>
+                <div className="text-[9px] font-mono font-black uppercase bg-[#000]/35 px-2.5 py-1 rounded border border-[#38BDF8]/40 text-[#38BDF8]">
+                  CÚP THẾ GIỚI 2026 • PHOTO RECAP ⚡
+                </div>
+              </div>
+
+              {/* HORIZONTAL SPREADSHEET SCROLL CONTAINER (LIMITED TO FOCUSED MATCHES) */}
+              <div className="bg-white rounded-xl border-4 border-[#1E293B] overflow-hidden" id="excel-focused-table-container">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse min-w-[750px]">
+                    <thead>
+                      <tr className="bg-[#1E293B] text-white border-b-4 border-slate-900">
+                        <th className="py-4 px-4 font-black text-xs uppercase tracking-wider border-r-4 border-slate-900 w-48 sticky left-0 bg-[#1E293B] text-white z-10">
+                          THÀNH VIÊN VĂN PHÒNG
+                        </th>
+                        {focusedMatches.map((m) => {
+                          const hasResult = m.scoreA !== null && m.scoreB !== null;
+                          const isCenter = m.id === matches[centerIndex]?.id;
+                          return (
+                            <th 
+                              key={m.id} 
+                              className={`py-4 px-3 text-center border-r-2 border-slate-800 ${isCenter ? 'bg-amber-500/10 text-yellow-300 border-amber-500 border-x-2' : ''} min-w-[140px] font-sans`}
+                            >
+                              {isCenter && (
+                                <div className="text-[8px] uppercase tracking-widest text-amber-500 font-extrabold mb-1 bg-amber-500/20 py-0.5 rounded border border-amber-500/30">
+                                  ⭐ TRẬN VỪA ĐẤU ⭐
+                                </div>
+                              )}
+                              {!isCenter && (
+                                <div className="text-[8px] uppercase tracking-wider text-slate-400 font-bold mb-1">
+                                  {m.stage}
+                                </div>
+                              )}
+                              <div className="font-extrabold text-slate-100 text-[11px] truncate max-w-[140px] px-1 uppercase italic tracking-tight">
+                                {m.teamA} x {m.teamB}
+                              </div>
+                              <div className="mt-2">
+                                {hasResult ? (
+                                  <span className="inline-block px-1.5 py-0.5 rounded border border-white bg-emerald-500 font-mono font-black text-[8px] shadow-[1px_1px_0px_#000]">
+                                    KQ: {m.scoreA}-{m.scoreB}
+                                  </span>
+                                ) : (
+                                  <span className="inline-block px-1.5 py-0.5 rounded border border-slate-700 bg-slate-800 text-slate-400 font-mono font-black text-[8px]">
+                                    CHỜ ĐIỀN KQ
+                                  </span>
+                                )}
+                              </div>
+                            </th>
+                          );
+                        })}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y-2 divide-slate-150">
+                      {participants.map((p) => (
+                        <tr key={p.id} className="font-bold">
+                          {/* STICKY COLUMN */}
+                          <td className="py-2.5 px-3 border-r-4 border-slate-900 font-sans sticky left-0 bg-slate-100/95 z-10 shadow-[2px_0px_0px_#1E293B]">
+                            <div className="flex items-center gap-1.5">
+                              <span className={`w-2.5 h-2.5 rounded-sm border border-slate-950 ${p.avatarColor} shrink-0`}></span>
+                              <div className="text-[11px] font-black text-slate-950 uppercase tracking-tight truncate max-w-[125px]">
+                                {p.name}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* PREDICTION CELLS LIMIT TO FOCUS */}
+                          {focusedMatches.map((m) => {
+                            const pred = predictions.find((pr) => pr.participantId === p.id && pr.matchId === m.id);
+                            const hasResult = m.scoreA !== null && m.scoreB !== null;
+                            const isCenter = m.id === matches[centerIndex]?.id;
+                            
+                            let cellClasses = isCenter ? 'bg-amber-500/5' : 'bg-white';
+                            let label = 'Chưa đấu';
+
+                            if (hasResult) {
+                              const { status } = calculatePoints(pred, m, scoringConfig);
+                              if (status === 'outcome') {
+                                cellClasses = `${isCenter ? 'bg-emerald-300' : 'bg-emerald-200'} text-slate-950 border-r border-slate-900 font-black`;
+                                label = 'ĐÚNG (🔥 0đ)';
+                              } else {
+                                const stageFine = getFineAmountForStage(m.stage);
+                                cellClasses = 'bg-red-50 text-red-800 border-r border-slate-200 font-extrabold';
+                                label = `SAI (+${stageFine / 1000}k)`;
+                              }
+                            } else if (pred) {
+                              cellClasses = 'bg-indigo-50/65 text-indigo-950 border-r border-slate-200';
+                              label = 'ĐÃ CHỐT VOTE';
+                            } else {
+                              cellClasses = 'bg-yellow-50/45 text-amber-600/80 italic border-r border-slate-250 border-dashed';
+                              label = 'CHƯA VOTE';
+                            }
+
+                            let displayValue = '?';
+                            if (pred) {
+                              displayValue = pred.choice === 'A' ? m.teamA : m.teamB;
+                            }
+
+                            return (
+                              <td
+                                key={m.id}
+                                className={`text-center p-2 border-r border-slate-200 min-w-[140px] select-none h-12 ${cellClasses}`}
+                              >
+                                <div className="flex flex-col justify-center items-center h-full">
+                                  <span className="text-[11px] font-black truncate max-w-[130px] uppercase tracking-tight text-slate-900">
+                                    {pred ? displayValue : <span className="text-slate-400 font-normal">Chưa dự đoán</span>}
+                                  </span>
+                                  <span className="block text-[7px] uppercase tracking-wider text-slate-500 mt-0.5 font-bold">
+                                    {label}
+                                  </span>
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* CONTROL PANEL TO EXPORT TO IMAGE (NOT CAPTURED) */}
-          <div className="bg-[#EEF2F6] rounded-xl border-4 border-[#1E293B] p-4.5 shadow-[4px_4px_0px_#1E293B] flex flex-col md:flex-row items-center justify-between gap-4 animate-fade-in mb-4">
-            <div className="space-y-1 text-center md:text-left">
-              <h4 className="font-sans font-black text-xs md:text-sm text-slate-900 uppercase italic tracking-tight flex items-center justify-center md:justify-start gap-1.5">
-                📸 BẢN XUẤT ẢNH TRỌN BỘ SPREADSHEET CHO ZALO NHÓM
+          <div className="bg-[#EEF2F6] rounded-xl border-4 border-[#1E293B] p-5 shadow-[4px_4px_0px_#1E293B] space-y-4 animate-fade-in mb-4">
+            <div className="border-b-2 border-slate-200 pb-3">
+              <h4 className="font-sans font-black text-xs md:text-sm text-slate-900 uppercase italic tracking-tight flex items-center gap-1.5 justify-center md:justify-start">
+                📸 BỘ XUẤT ẢNH BÁO CÁO CỰC NÉT CHO ZALO NHÓM
               </h4>
-              <p className="text-[10px] text-slate-600 font-extrabold uppercase leading-normal">
-                Hệ thống tự động mở rộng mọi cột bị che khuất và tải về toàn bộ 28 thành viên PKT với tất cả trận đấu dưới dạng ảnh HD.
+              <p className="text-[10px] text-slate-600 font-extrabold uppercase mt-1 leading-normal text-center md:text-left">
+                Để tránh ảnh gửi Zalo bị co nhỏ/mờ chữ khi xem trên điện thoại, hãy chọn bản chụp 5 trận tiêu điểm dưới đây!
               </p>
             </div>
             
-            <button
-              onClick={handleDownloadFullTable}
-              disabled={downloadingFull}
-              className="w-full md:w-auto flex items-center justify-center gap-1.5 py-2 px-5 text-[11px] font-black uppercase tracking-wider rounded border-2 border-slate-950 bg-indigo-600 text-white shadow-[2px_2px_0px_#000] hover:bg-slate-950 hover:text-white disabled:opacity-50 disabled:cursor-wait active:translate-y-0.5 transition-all cursor-pointer shrink-0"
-            >
-              <Download className="w-4 h-4" />
-              {downloadingFull ? 'ĐANG TẠO FILE...' : '📥 TẢI ẢNH BẢNG ĐẦY ĐỦ (PNG)'}
-            </button>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Option 1: Focused 5 Match Image */}
+              <div className="bg-emerald-50 rounded-lg border-2 border-emerald-950 p-3 flex flex-col md:flex-row items-center justify-between gap-3 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
+                <div className="space-y-1 text-center md:text-left">
+                  <span className="inline-block px-2 py-0.5 bg-emerald-600 border border-slate-950 text-white rounded font-mono text-[8px] font-black uppercase tracking-wider">
+                    ⭐ KHUYÊN DÙNG GỬI ZALO
+                  </span>
+                  <h5 className="font-sans font-extrabold text-[11px] text-slate-900 uppercase">
+                    Ảnh 5 trận trọng tâm (±2 trận liền kề)
+                  </h5>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase">
+                    Có trận vừa đá làm trung tâm ({focusedMatches.length} trận). Gọn và chữ siêu to!
+                  </p>
+                </div>
+                <button
+                  onClick={handleDownloadFocusedTable}
+                  disabled={downloadingFocused}
+                  className="w-full md:w-auto flex items-center justify-center gap-1.5 py-2 px-4 text-[10px] font-black uppercase tracking-wider rounded border-2 border-slate-950 bg-emerald-500 text-white shadow-[2px_2px_0px_#000] hover:bg-slate-950 hover:text-white disabled:opacity-50 disabled:cursor-wait active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  {downloadingFocused ? 'ĐANG TẠO...' : '📥 TẢI ẢNH 5 TRẬN (HD)'}
+                </button>
+              </div>
+
+              {/* Option 2: Full Table Image */}
+              <div className="bg-slate-50 rounded-lg border-2 border-slate-950 p-3 flex flex-col md:flex-row items-center justify-between gap-3 shadow-[2px_2px_0px_rgba(0,0,0,0.05)]">
+                <div className="space-y-1 text-center md:text-left">
+                  <span className="inline-block px-1.5 py-0.5 bg-slate-600 border border-slate-950 text-white rounded font-mono text-[8px] font-black uppercase tracking-wider">
+                    🌐 BẢN ĐẦY ĐỦ
+                  </span>
+                  <h5 className="font-sans font-extrabold text-[11px] text-slate-900 uppercase">
+                    Ảnh trọn bộ tất cả các trận
+                  </h5>
+                  <p className="text-[9px] text-slate-500 font-bold uppercase">
+                    Toàn bộ tất cả {matches.length} trận đấu (Thích hợp lưu trữ hoặc xem PC)
+                  </p>
+                </div>
+                <button
+                  onClick={handleDownloadFullTable}
+                  disabled={downloadingFull}
+                  className="w-full md:w-auto flex items-center justify-center gap-1.5 py-2 px-4 text-[10px] font-black uppercase tracking-wider rounded border-2 border-slate-950 bg-indigo-600 text-white shadow-[2px_2px_0px_#000] hover:bg-slate-950 hover:text-white disabled:opacity-50 disabled:cursor-wait active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  {downloadingFull ? 'ĐANG TẠO...' : '📥 TẢI ẢNH FULL BẢNG'}
+                </button>
+              </div>
+            </div>
           </div>
 
           <div ref={fullTableRef} className="bg-white p-5 rounded-xl border-4 border-[#1E293B] space-y-4 shadow-[6px_6px_0px_rgba(0,0,0,0.15)]">
