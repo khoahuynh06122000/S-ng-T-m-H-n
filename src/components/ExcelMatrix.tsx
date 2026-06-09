@@ -669,11 +669,11 @@ export default function ExcelMatrix({
                               const { status } = calculatePoints(pred, m, scoringConfig);
                               if (status === 'outcome') {
                                 cellClasses = `${isCenter ? 'bg-emerald-300' : 'bg-emerald-200'} text-slate-950 border-r border-slate-900 font-black`;
-                                label = 'ĐÚNG (🔥 0đ)';
+                                label = 'ĐÚNG (🔥 0 cá)';
                               } else {
                                 const stageFine = getFineAmountForStage(m.stage);
                                 cellClasses = 'bg-red-50 text-red-800 border-r border-slate-200 font-extrabold';
-                                label = `SAI (+${stageFine / 1000}k)`;
+                                label = `SAI (+${stageFine} cá)`;
                               }
                             } else if (pred) {
                               cellClasses = 'bg-indigo-50/65 text-indigo-950 border-r border-slate-200';
@@ -799,7 +799,7 @@ export default function ExcelMatrix({
             <h3 className="font-sans font-black text-base text-slate-900 uppercase italic tracking-tight">HƯỚNG DẪN BẢNG SPREADSHEET CHỌN ĐỘI THẮNG (MATCH MATRIX)</h3>
             <p className="text-xs text-slate-600 mt-1 font-bold leading-relaxed">
               Dự đoán đội giành chiến thắng trận đấu: <strong className="text-slate-900">Không có tùy chọn Hòa</strong>. 
-              Bạn chỉ cần chọn đội bóng mà bạn tin là sẽ giành chiến thắng. Nếu bạn đoán đúng, <strong className="text-emerald-600 uppercase">bạn sẽ không phải nộp đồng nào (0 VNĐ)</strong>. Ngược lại, nếu kết quả thực tế không trùng với lựa chọn của bạn (hoặc bạn quên không dự đoán), tiền phạt sẽ tự động cộng dồn vào quỹ chung tùy theo vòng đấu.
+              Bạn chỉ cần chọn đội bóng mà bạn tin là sẽ giành chiến thắng. Nếu bạn đoán đúng, <strong className="text-emerald-600 uppercase">bạn sẽ không phải gánh phạt nào (0 cá)</strong>. Ngược lại, nếu kết quả thực tế không trùng với lựa chọn của bạn (hoặc bạn quên không dự đoán), số cá phạt sẽ tự động cộng dồn vào quỹ chung tùy theo vòng đấu.
               <br />
               <span className="text-indigo-650 text-indigo-600 font-extrabold mt-1.5 block">
                 🚀 Mẹo: Bạn có thể nhấn nút <strong className="underline">⚡ Chia Nhanh Vote</strong> ở góc trên đầu trang để tích chọn nhanh những ai vote cho Đội A, toàn bộ thành viên còn lại sẽ được tự động điền Đội B chỉ trong 1 click!
@@ -811,27 +811,27 @@ export default function ExcelMatrix({
         {/* LEGEND BADGES (GEOMETRIC FLAT BLOCKS) */}
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-3 border-t-2 border-slate-200 text-[10px] font-black uppercase tracking-tight" id="excel-legend">
           <span className="flex items-center gap-1.5 text-slate-800">
-            <span className="px-2 py-0.5 rounded border-2 border-slate-950 bg-emerald-300 text-slate-950 font-mono font-black shadow-[1px_1px_0px_#000]">0 VNĐ</span>
-            Đoán đúng: Không phải nộp quỹ 🌟
+            <span className="px-2 py-0.5 rounded border-2 border-slate-950 bg-emerald-300 text-slate-950 font-mono font-black shadow-[1px_1px_0px_#000]">0 CÁ</span>
+            Đoán đúng: Không phải đóng cá nộp quỹ 🌟
           </span>
           <span className="flex items-center gap-1.5 text-slate-850">
-            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-red-100 text-red-800 font-mono font-black shadow-[1px_1px_0px_#000]">+10k VNĐ</span>
+            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-red-100 text-red-800 font-mono font-black shadow-[1px_1px_0px_#000]">+10 CÁ</span>
             Sai Vòng bảng & 32 đội
           </span>
           <span className="flex items-center gap-1.5 text-slate-850">
-            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-indigo-50 text-indigo-800 font-mono font-black shadow-[1px_1px_0px_#000]">+20k VNĐ</span>
+            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-indigo-50 text-indigo-800 font-mono font-black shadow-[1px_1px_0px_#000]">+20 CÁ</span>
             Sai Vòng 16 (1/8)
           </span>
           <span className="flex items-center gap-1.5 text-slate-850">
-            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-amber-55 bg-amber-50 text-amber-800 font-mono font-black shadow-[1px_1px_0px_#000]">+30k VNĐ</span>
+            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-amber-55 bg-amber-50 text-amber-800 font-mono font-black shadow-[1px_1px_0px_#000]">+30 CÁ</span>
             Sai Tứ kết
           </span>
           <span className="flex items-center gap-1.5 text-slate-850">
-            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-orange-50 text-orange-800 font-mono font-black shadow-[1px_1px_0px_#000]">+40k VNĐ</span>
+            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-orange-50 text-orange-800 font-mono font-black shadow-[1px_1px_0px_#000]">+40 CÁ</span>
             Sai Bán kết
           </span>
           <span className="flex items-center gap-1.5 text-slate-850">
-            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-red-500 text-white font-mono font-black shadow-[1px_1px_0px_#000]">+50k VNĐ</span>
+            <span className="px-1.5 py-0.5 rounded border-2 border-slate-950 bg-red-500 text-white font-mono font-black shadow-[1px_1px_0px_#000]">+50 CÁ</span>
             Sai Chung kết
           </span>
         </div>
@@ -902,11 +902,11 @@ export default function ExcelMatrix({
                       const { status } = calculatePoints(pred, m, scoringConfig);
                       if (status === 'outcome') {
                         cellClasses = 'bg-emerald-300 text-slate-950 border-r-2 border-slate-900 font-black';
-                        label = 'ĐÚNG (🔥 0đ)';
+                        label = 'ĐÚNG (🔥 0 cá)';
                       } else {
                         const stageFine = getFineAmountForStage(m.stage);
                         cellClasses = 'bg-red-105 bg-red-100 text-red-800 border-r-2 border-slate-200 font-black';
-                        label = `SAI (+${stageFine / 1000}k 💀)`;
+                        label = `SAI (+${stageFine} cá 💀)`;
                       }
                     } else if (pred) {
                       cellClasses = 'bg-indigo-50 text-indigo-900 border-r-2 border-slate-200';

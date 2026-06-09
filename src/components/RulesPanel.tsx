@@ -28,7 +28,7 @@ export default function RulesPanel() {
       {/* THREE PILLAR PANELS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         
-        {/* PANEL 1: CƠ CHẾ ĐÓNG GÓP QUỸ (TIỀN BỐI THƯỜNG) */}
+        {/* PANEL 1: CƠ CHẾ ĐÓNG GÓP QUỸ (PHẠT CÁ) */}
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -37,19 +37,19 @@ export default function RulesPanel() {
         >
           <div className="flex items-center justify-between mb-4 border-b-2 border-slate-200 pb-3">
             <span className="px-2.5 py-1 bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-wider rounded border border-red-200 flex items-center gap-1">
-              <Coins className="w-3.5 h-3.5" /> 1. CƠ CHẾ QUỸ HIỆN KIM
+              <Coins className="w-3.5 h-3.5" /> 1. QUY CHẾ QUỸ PHẠT CÁ 🐟
             </span>
-            <span className="text-lg">💰</span>
+            <span className="text-lg">🐟</span>
           </div>
 
-          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">SỐ TIỀN PHẠT CHO MỖI LƯỢT ĐOÁN SAI:</h3>
+          <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-3">SỐ CÁ PHẠT CHO MỖI LƯỢT ĐOÁN SAI:</h3>
           <div className="space-y-2 font-mono">
             {[
-              { stage: 'VÒNG BẢNG & 32 ĐỘI', fine: '10.000 VNĐ', badge: '10K', color: 'bg-slate-100 border-slate-300 text-slate-700' },
-              { stage: 'VÒNG 16 ĐỘI (1/8)', fine: '20.000 VNĐ', badge: '20K', color: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
-              { stage: 'TỨ KẾT', fine: '30.000 VNĐ', badge: '30K', color: 'bg-amber-50 border-amber-200 text-amber-700' },
-              { stage: 'BÁN KẾT', fine: '40.000 VNĐ', badge: '40K', color: 'bg-orange-50 border-orange-200 text-orange-700' },
-              { stage: 'CHUNG KẾT', fine: '50.000 VNĐ', badge: '50K', color: 'bg-red-50 border-red-200 text-red-700' },
+              { stage: 'VÒNG BẢNG & 32 ĐỘI', fine: '10 cá', badge: '10 Cá', color: 'bg-slate-100 border-slate-300 text-slate-700' },
+              { stage: 'VÒNG 16 ĐỘI (1/8)', fine: '20 cá', badge: '20 Cá', color: 'bg-indigo-50 border-indigo-200 text-indigo-700' },
+              { stage: 'TỨ KẾT', fine: '30 cá', badge: '30 Cá', color: 'bg-amber-50 border-amber-200 text-amber-700' },
+              { stage: 'BÁN KẾT', fine: '40 cá', badge: '40 Cá', color: 'bg-orange-50 border-orange-200 text-orange-700' },
+              { stage: 'CHUNG KẾT', fine: '50 cá', badge: '50 Cá', color: 'bg-red-50 border-red-200 text-red-700' },
             ].map((rule, idx) => (
               <div key={idx} className="flex items-center justify-between p-2 rounded border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors">
                 <span className="text-[11px] font-bold text-slate-800 uppercase font-sans">{rule.stage}</span>
@@ -62,7 +62,7 @@ export default function RulesPanel() {
 
           <div className="mt-4 p-2.5 bg-yellow-50 border border-yellow-250 rounded text-[10px] font-bold text-yellow-905 flex gap-2 items-start leading-relaxed">
             <span className="text-sm">💡</span>
-            <span>Không vote: Mặc định tính dự đoán sai và phạt tương đương theo vòng đấu!</span>
+            <span>Không vote: Mặc định tính dự đoán sai và phạt số cá tương đương theo vòng đấu!</span>
           </div>
         </motion.div>
 

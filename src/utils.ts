@@ -4,28 +4,28 @@ import { Match, Participant, Prediction, ScoringConfig, StandingRow } from './ty
  * Calculates cash fine for a wrong prediction based on the tournament stage names.
  */
 export function getFineAmountForStage(stage: string): number {
-  if (!stage) return 10000;
+  if (!stage) return 10;
   const norm = stage.toLowerCase().trim();
   
   if (norm.includes('chung kết') || norm.includes('final')) {
-    return 50000; // Chung kết: 50K
+    return 50; // Chung kết: 50 cá
   }
   if (norm.includes('bán kết') || norm.includes('semi')) {
-    return 40000; // Bán kết: 40K
+    return 40; // Bán kết: 40 cá
   }
   if (norm.includes('tứ kết') || norm.includes('quarter')) {
-    return 30000; // Tứ kết: 30K
+    return 30; // Tứ kết: 30 cá
   }
   if (
     norm.includes('16') || 
     norm.includes('1/8') ||
     norm.includes('octofinal')
   ) {
-    return 20000; // Vòng 16: 20K
+    return 20; // Vòng 16: 20 cá
   }
   
-  // Vòng bảng & Vòng 32: 10K
-  return 10000;
+  // Vòng bảng & Vòng 32: 10 cá
+  return 10;
 }
 
 /**
@@ -178,7 +178,7 @@ export function exportToCSV(
 
   // --- SECTION 1: STANDINGS ---
   csvContent += 'BẢNG XẾP HẠNG THÀNH VIÊN VĂN PHÒNG\n';
-  csvContent += 'Hạng,Tên thành viên,Vai trò,Nộp Quỹ Cộng Dồn (VNĐ),Đoán Đúng,Đoán Sai / Trễ,Đã dự đoán\n';
+  csvContent += 'Hạng,Tên thành viên,Vai trò,Nộp Quỹ Cộng Dồn (Cá),Đoán Đúng,Đoán Sai / Trễ,Đã dự đoán\n';
 
   standings.forEach((row, index) => {
     csvContent += `"${index + 1}","${row.participant.name}","${row.participant.role || ''}","${row.fines}","${row.outcomeCount}","${row.wrongCount}","${row.predictedCount}"\n`;

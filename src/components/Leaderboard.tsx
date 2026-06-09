@@ -57,12 +57,12 @@ export default function Leaderboard({
               <Coins className="w-8 h-8 text-amber-400 stroke-[2px]" />
             </div>
             
-            <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG QUỸ HOÀN TRÁCH</h3>
+            <h3 className="font-sans text-xs font-bold text-slate-400 uppercase tracking-wider">TỔNG QUỸ PHẠT CÁ 🐟</h3>
             <div className="text-3xl font-black text-amber-400 font-mono italic tracking-tight mt-1">
-              {totalAccruedFund.toLocaleString('vi-VN')} VNĐ
+              {totalAccruedFund} cá
             </div>
             <p className="text-[11px] text-slate-350 leading-relaxed font-bold mt-3">
-              Mỗi lượt đoán sai tự động cộng dồn tiền phạt vào quỹ. Không tính điểm số rườm rà - quỹ dùng 100% tài trợ buffet bia bọt liên hoan cho cả phòng PKT!
+              Mỗi lượt đoán sai tự động cộng dồn số cá phạt vào quỹ. Không tính điểm số rườm rà - quỹ dùng 100% tài trợ buffet bia bọt liên hoan cho cả phòng PKT!
             </p>
           </div>
 
@@ -220,9 +220,9 @@ export default function Leaderboard({
                 <th className="py-4 px-4 w-20 text-center">HẠNG</th>
                 <th className="py-4 px-4">THÀNH VIÊN</th>
                 <th className="py-4 px-4 text-center">ĐÃ DỰ ĐOÁN</th>
-                <th className="py-4 px-4 text-center text-emerald-800 bg-emerald-50/30">ĐOÁN ĐÚNG (0đ) 🌟</th>
+                <th className="py-4 px-4 text-center text-emerald-800 bg-emerald-50/30">ĐOÁN ĐÚNG (0 CÁ) 🌟</th>
                 <th className="py-4 px-4 text-center text-red-650">VOTE SAI / TRỄ 💀</th>
-                <th className="py-4 px-5 text-right w-44 text-slate-950 bg-amber-100">NỘP QUỸ CỘNG DỒN (VNĐ) 💰</th>
+                <th className="py-4 px-5 text-right w-44 text-slate-950 bg-amber-100">NỘP QUỸ CỘNG DỒN (CÁ) 💰</th>
               </tr>
             </thead>
             <tbody className="divide-y-2 divide-slate-200">
@@ -315,7 +315,7 @@ export default function Leaderboard({
                             ? 'text-emerald-700 bg-emerald-50 border-emerald-300' 
                             : 'text-slate-900 bg-amber-50 border-amber-200'
                         }`}>
-                          {(row.fines || 0).toLocaleString('vi-VN')} đ
+                          {row.fines || 0} cá
                         </span>
                       </td>
                     </motion.tr>

@@ -331,7 +331,7 @@ export default function FinesTracker({
                         <span className="text-xs font-black uppercase italic text-slate-900">{stood.participant.name}</span>
                       </div>
                       <span className="text-xs font-black font-mono bg-white px-2 py-0.5 border border-red-400 rounded text-red-700">
-                        {stood.fines.toLocaleString('vi-VN')} đ
+                        {stood.fines} cá
                       </span>
                     </div>
                   ))}
@@ -357,7 +357,7 @@ export default function FinesTracker({
               <ul className="text-[10.5px] font-bold text-slate-700 space-y-2 leading-relaxed font-sans">
                 <li className="flex items-start gap-1.5">
                   <span className="text-[#10B981] shrink-0 select-none">✔</span>
-                  <span>Đoán trúng đội giành chiến thắng trận đấu: <strong className="text-emerald-600">0 VNĐ</strong> phạt.</span>
+                  <span>Đoán trúng đội giành chiến thắng trận đấu: <strong className="text-emerald-600">0 cá</strong> phạt.</span>
                 </li>
                 <li className="flex items-start gap-1.5">
                   <span className="text-red-650 shrink-0 select-none">•</span>
@@ -366,11 +366,11 @@ export default function FinesTracker({
                 <li className="flex items-start gap-1.5">
                   <span className="text-red-750 shrink-0 select-none">•</span>
                   <span><strong>Biểu phí quy chế nộp quỹ khi đoán sai:</strong>
-                    <br />- Vòng bảng & 32 đội: <strong className="text-red-650">10k VNĐ</strong>
-                    <br />- Vòng 16 (1/8): <strong className="text-red-650">20k VNĐ</strong>
-                    <br />- Vòng Tứ kết: <strong className="text-red-650">30k VNĐ</strong>
-                    <br />- Vòng Bán kết: <strong className="text-red-650">40k VNĐ</strong>
-                    <br />- Trận Chung kết: <strong className="text-red-650 font-black">50k VNĐ</strong>
+                    <br />- Vòng bảng & 32 đội: <strong className="text-red-650">10 cá</strong>
+                    <br />- Vòng 16 (1/8): <strong className="text-red-650">20 cá</strong>
+                    <br />- Vòng Tứ kết: <strong className="text-red-650">30 cá</strong>
+                    <br />- Vòng Bán kết: <strong className="text-red-650">40 cá</strong>
+                    <br />- Trận Chung kết: <strong className="text-red-650 font-black">50 cá</strong>
                   </span>
                 </li>
               </ul>
