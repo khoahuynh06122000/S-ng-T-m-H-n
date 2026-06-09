@@ -98,7 +98,7 @@ export default function Leaderboard({
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <div className="bg-white border-2 border-slate-900 p-2 rounded">
                   <div className="text-slate-500 text-[8px] uppercase font-black tracking-tight">ĐÃ PHẠT</div>
-                  <div className="text-base font-black text-amber-600 font-mono italic">{leader.fines.toLocaleString('vi-VN')}đ</div>
+                  <div className="text-base font-black text-amber-600 font-mono italic">{leader.fines} cá</div>
                 </div>
                 <div className="bg-white border-2 border-slate-900 p-2 rounded">
                   <div className="text-slate-500 text-[8px] uppercase font-black tracking-tight">ĐOÁN TRÚNG</div>
@@ -138,7 +138,7 @@ export default function Leaderboard({
                   {worstLeaguers.map(s => s.participant.name).join(', ')}
                 </h4>
                 <p className="text-red-100 text-[10px] mt-1.5 font-bold min-h-[30px] leading-relaxed">
-                  Đội đóng tủ nộp quỹ nhiệt tình nhất! Đã tích lũy kỷ lục đóng phạt: <strong className="text-yellow-300">{(worstFineAmount).toLocaleString('vi-VN')}đ</strong>. Cố lên sếp ơi/AE ơi!
+                  Đội đóng tủ nộp quỹ nhiệt tình nhất! Đã tích lũy kỷ lục đóng phạt: <strong className="text-yellow-300">{worstFineAmount} cá</strong>. Cố lên sếp ơi/AE ơi!
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-2 text-slate-900 font-mono">
@@ -148,7 +148,7 @@ export default function Leaderboard({
                   </div>
                   <div className="bg-white border-2 border-slate-900 p-2 rounded">
                     <div className="text-slate-500 text-[8px] uppercase font-black tracking-tight font-sans">ÁP LỰC QUỸ</div>
-                    <div className="text-sm font-black text-rose-750 italic">{worstLeaguers[0].fines.toLocaleString('vi-VN')}đ</div>
+                    <div className="text-sm font-black text-rose-750 italic">{worstLeaguers[0].fines} cá</div>
                   </div>
                 </div>
               </div>
@@ -185,17 +185,17 @@ export default function Leaderboard({
           <div>
             <h3 className="font-sans font-black text-lg uppercase italic tracking-tight text-white">BẢNG THEO DÕI NỘP QUỸ LIÊN HOAN PKT</h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[10px] font-bold mt-1.5 uppercase text-slate-350">
-              <span className="text-emerald-400 font-black">🎯 Đoán đúng: KHÔNG PHẢI NỘP QUỸ (0đ) ❌💸</span>
+              <span className="text-emerald-400 font-black">🎯 Đoán đúng: KHÔNG PHẢI NỘP QUỸ (0 cá) ❌💸</span>
               <span className="text-slate-500 hidden sm:inline">•</span>
-              <span className="text-red-400">Sai Vòng bảng/32: <span className="font-mono text-xs">10kđ</span></span>
+              <span className="text-red-400">Sai Vòng bảng/32: <span className="font-mono text-xs">10 cá</span></span>
               <span className="text-slate-500 hidden sm:inline">•</span>
-              <span className="text-red-400">Sai Vòng 16: <span className="font-mono text-xs">20kđ</span></span>
+              <span className="text-red-400">Sai Vòng 16: <span className="font-mono text-xs">20 cá</span></span>
               <span className="text-slate-500 hidden sm:inline">•</span>
-              <span className="text-red-400">Sai Tứ kết: <span className="font-mono text-xs">30kđ</span></span>
+              <span className="text-red-400">Sai Tứ kết: <span className="font-mono text-xs">30 cá</span></span>
               <span className="text-slate-500 hidden sm:inline">•</span>
-              <span className="text-red-400">Sai Bán kết: <span className="font-mono text-xs">40kđ</span></span>
+              <span className="text-red-400">Sai Bán kết: <span className="font-mono text-xs">40 cá</span></span>
               <span className="text-slate-500 hidden sm:inline">•</span>
-              <span className="text-red-400">Sai Chung kết: <span className="font-mono text-xs">50kđ</span></span>
+              <span className="text-red-400">Sai Chung kết: <span className="font-mono text-xs">50 cá</span></span>
             </div>
           </div>
 
