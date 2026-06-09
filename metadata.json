@@ -1,0 +1,6 @@
+{
+  "name": "Bảng Dự Đoán World Cup 2026",
+  "description": "Bảng tính tự động tính điểm dự đoán tỷ số bóng đá World Cup 2026 cho văn phòng. Giúp tự động tính toán, xếp hạng và xác định ai xếp chót bảng để chịu phạt.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
