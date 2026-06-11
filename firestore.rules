@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Catch-all Security Block
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Un-authenticated validation helpers
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Path variable ID helper
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Type checking functions
+    function isStringWithLimit(val, max_size) {
+      return val is string && val.size() <= max_size;
+    }
+
+    function isBoolean(val) {
+      return val is bool;
+    }
+
+    function isInt(val) {
+      return val is int;
+    }
+
+    function isNumber(val) {
+      return val is int || val is float;
+    }
+
+    // 2. ENTITY SPECIFIC SCHEMAS
+    function isValidParticipant(data) {
+      return data.keys().hasAll(['id', 'name', 'avatarColor']) 
+        && data.keys().size() <= 4
+        && isStringWithLimit(data.id, 64)
+        && isStringWithLimit(data.name, 100)
+        && isStringWithLimit(data.avatarColor, 50)
+        && (!data.keys().hasAny(['role']) || isStringWithLimit(data.role, 100));
+    }
+
+    function isValidMatch(data) {
+      return data.keys().hasAll(['id', 'teamA', 'teamB', 'dateTime', 'stage', 'handicap'])
+        && data.keys().size() <= 8
+        && isStringWithLimit(data.id, 64)
+        && isStringWithLimit(data.teamA, 100)
+        && isStringWithLimit(data.teamB, 100)
+        && isStringWithLimit(data.dateTime, 50)
+        && isStringWithLimit(data.stage, 150)
+        && isNumber(data.handicap)
+        && (!data.keys().hasAny(['scoreA']) || data.scoreA == null || isInt(data.scoreA))
+        && (!data.keys().hasAny(['scoreB']) || data.scoreB == null || isInt(data.scoreB));
+    }
+
+    function isValidPrediction(data) {
+      return data.keys().hasAll(['participantId', 'matchId', 'choice'])
+        && data.keys().size() == 3
+        && isStringWithLimit(data.participantId, 64)
+        && isStringWithLimit(data.matchId, 64)
+        && (data.choice == 'A' || data.choice == 'B');
+    }
+
+    function isValidScoringConfig(data) {
+      return data.keys().hasAll(['exactScore', 'correctOutcome', 'wrongOutcome'])
+        && data.keys().size() == 3
+        && isInt(data.exactScore)
+        && isInt(data.correctOutcome)
+        && isInt(data.wrongOutcome);
+    }
+
+    // 3. COLLECTIONS DEFINITION
+    match /participants/{participantId} {
+      allow read: if true;
+      allow create, update: if isValidId(participantId) && isValidParticipant(incoming());
+      allow delete: if isValidId(participantId);
+    }
+
+    match /matches/{matchId} {
+      allow read: if true;
+      allow create, update: if isValidId(matchId) && isValidMatch(incoming());
+      allow delete: if isValidId(matchId);
+    }
+
+    match /predictions/{predictionId} {
+      allow read: if true;
+      allow create, update: if isValidId(predictionId) && isValidPrediction(incoming());
+      allow delete: if isValidId(predictionId);
+    }
+
+    match /scoringConfig/{configId} {
+      allow read: if true;
+      allow create, update: if isValidId(configId) && isValidScoringConfig(incoming());
+      allow delete: if isValidId(configId);
+    }
+  }
+}

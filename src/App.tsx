@@ -7,6 +7,18 @@ import {
   DEFAULT_SCORING
 } from './initialData';
 import { getStandings, exportToCSV } from './utils';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  deleteDoc, 
+  getDocs, 
+  onSnapshot, 
+  writeBatch,
+  query,
+  where
+} from 'firebase/firestore';
+import { db, handleFirestoreError, OperationType } from './firebase';
 import {
   Trophy,
   Table,
@@ -37,13 +49,12 @@ export default function App() {
   // Navigation State
   const [activeTab, setActiveTab] = useState<ActiveTab>('leaderboard');
 
-  // Core Data States (Load from localStorage if exists)
+  // Core Data States (Load from localStorage as quick starting client fallback/offline cache)
   const [participants, setParticipants] = useState<Participant[]>(() => {
     const saved = localStorage.getItem('wc_office_participants');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Automatically migrate to new 28 PKT members if we detect old sample data
         if (parsed.some((p: any) => p.name === 'Sếp Dũng') || parsed.length < 15) {
           return INITIAL_PARTICIPANTS.map(p => ({ ...p, role: '' }));
         }
@@ -99,22 +110,92 @@ export default function App() {
   const [showBulkSplitter, setShowBulkSplitter] = useState(false);
   const [useIPhoneFrame, setUseIPhoneFrame] = useState(false);
 
-  // Sync to localStorage
+  // Firestore automatic seed & real-time sync listeners
   useEffect(() => {
-    localStorage.setItem('wc_office_participants', JSON.stringify(participants));
-  }, [participants]);
+    const checkAndSeed = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'participants'));
+        if (querySnapshot.empty) {
+          console.log('Firestore is empty. Syncing and seeding Initial Dataset...');
+          const batch = writeBatch(db);
+          INITIAL_PARTICIPANTS.forEach((p) => {
+            batch.set(doc(db, 'participants', p.id), { ...p, role: p.role || '' });
+          });
+          INITIAL_MATCHES.forEach((m) => {
+            batch.set(doc(db, 'matches', m.id), m);
+          });
+          INITIAL_PREDICTIONS.forEach((pr) => {
+            batch.set(doc(db, 'predictions', `${pr.participantId}_${pr.matchId}`), pr);
+          });
+          batch.set(doc(db, 'scoringConfig', 'default'), DEFAULT_SCORING);
+          await batch.commit();
+          console.log('Seeding completed successfully!');
+        }
+      } catch (err) {
+        console.error('Error auto-seeding Firestore:', err);
+      }
+    };
+    checkAndSeed();
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem('wc_office_matches', JSON.stringify(matches));
-  }, [matches]);
+    const unsubParticipants = onSnapshot(collection(db, 'participants'), (snap) => {
+      const list: Participant[] = [];
+      snap.forEach((d) => {
+        list.push(d.data() as Participant);
+      });
+      if (list.length > 0) {
+        setParticipants(list);
+        localStorage.setItem('wc_office_participants', JSON.stringify(list));
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'participants');
+    });
 
-  useEffect(() => {
-    localStorage.setItem('wc_office_predictions', JSON.stringify(predictions));
-  }, [predictions]);
+    const unsubMatches = onSnapshot(collection(db, 'matches'), (snap) => {
+      const list: Match[] = [];
+      snap.forEach((d) => {
+        list.push(d.data() as Match);
+      });
+      if (list.length > 0) {
+        const sortedList = [...list].sort((a, b) => {
+          return a.id.localeCompare(b.id);
+        });
+        setMatches(sortedList);
+        localStorage.setItem('wc_office_matches', JSON.stringify(sortedList));
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'matches');
+    });
 
-  useEffect(() => {
-    localStorage.setItem('wc_office_scoring_config', JSON.stringify(scoringConfig));
-  }, [scoringConfig]);
+    const unsubPredictions = onSnapshot(collection(db, 'predictions'), (snap) => {
+      const list: Prediction[] = [];
+      snap.forEach((d) => {
+        list.push(d.data() as Prediction);
+      });
+      setPredictions(list);
+      localStorage.setItem('wc_office_predictions', JSON.stringify(list));
+    }, (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'predictions');
+    });
+
+    const unsubScoring = onSnapshot(doc(db, 'scoringConfig', 'default'), (snap) => {
+      if (snap.exists()) {
+        const data = snap.data() as ScoringConfig;
+        setScoringConfig(data);
+        localStorage.setItem('wc_office_scoring_config', JSON.stringify(data));
+      }
+    }, (error) => {
+      handleFirestoreError(error, OperationType.GET, 'scoringConfig/default');
+    });
+
+    return () => {
+      unsubParticipants();
+      unsubMatches();
+      unsubPredictions();
+      unsubScoring();
+    };
+  }, []);
 
   // Calculate standby statistics
   const standings = getStandings(participants, matches, predictions, scoringConfig);
@@ -122,20 +203,26 @@ export default function App() {
   // --- ACTIONS & HANDLERS ---
 
   // Prediction updates
-  const handleUpdatePrediction = (pId: string, mId: string, choice: 'A' | 'B') => {
+  const handleUpdatePrediction = async (pId: string, mId: string, choice: 'A' | 'B') => {
+    // Optimistic Update
     setPredictions((prev) => {
-      // Check if prediction already exists
       const filtered = prev.filter((pr) => !(pr.participantId === pId && pr.matchId === mId));
       return [...filtered, { participantId: pId, matchId: mId, choice }];
     });
+
+    try {
+      await setDoc(doc(db, 'predictions', `${pId}_${mId}`), { participantId: pId, matchId: mId, choice });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `predictions/${pId}_${mId}`);
+    }
   };
 
-  const handleBulkSavePredictions = (
+  const handleBulkSavePredictions = async (
     predictionsToSave: { participantId: string; choice: 'A' | 'B' }[],
     matchId: string
   ) => {
+    // Optimistic Update
     setPredictions((prev) => {
-      // Overwrite all existing predictions for this match with the new bulk set
       const remaining = prev.filter((pr) => pr.matchId !== matchId);
       const formatted = predictionsToSave.map((p) => ({
         participantId: p.participantId,
@@ -144,10 +231,28 @@ export default function App() {
       }));
       return [...remaining, ...formatted];
     });
+
+    try {
+      const batch = writeBatch(db);
+      const q = query(collection(db, 'predictions'), where('matchId', '==', matchId));
+      const snap = await getDocs(q);
+      snap.forEach((d) => batch.delete(d.ref));
+
+      predictionsToSave.forEach((p) => {
+        batch.set(doc(db, 'predictions', `${p.participantId}_${matchId}`), {
+          participantId: p.participantId,
+          matchId,
+          choice: p.choice,
+        });
+      });
+      await batch.commit();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `bulk-predictions-match-${matchId}`);
+    }
   };
 
   // Match administration
-  const handleUpdateMatchScore = (mId: string, valA: number | null, valB: number | null) => {
+  const handleUpdateMatchScore = async (mId: string, valA: number | null, valB: number | null) => {
     setMatches((prev) =>
       prev.map((m) => {
         if (m.id === mId) {
@@ -156,43 +261,101 @@ export default function App() {
         return m;
       })
     );
+
+    try {
+      const target = matches.find((m) => m.id === mId);
+      if (target) {
+        await setDoc(doc(db, 'matches', mId), {
+          ...target,
+          scoreA: valA,
+          scoreB: valB,
+        });
+      }
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `matches/${mId}`);
+    }
   };
 
-  const handleAddMatch = (newMatch: Omit<Match, 'id'>) => {
+  const handleAddMatch = async (newMatch: Omit<Match, 'id'>) => {
+    const mId = 'm_' + Date.now().toString();
     const mWithId: Match = {
       ...newMatch,
-      id: 'm_' + Date.now().toString()
+      id: mId
     };
     setMatches((prev) => [...prev, mWithId]);
+
+    try {
+      await setDoc(doc(db, 'matches', mId), mWithId);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `matches/${mId}`);
+    }
   };
 
-  const handleDeleteMatch = (mId: string) => {
+  const handleDeleteMatch = async (mId: string) => {
     setMatches((prev) => prev.filter((m) => m.id !== mId));
-    // Clean up corresponding predictions
     setPredictions((prev) => prev.filter((pr) => pr.matchId !== mId));
+
+    try {
+      const batch = writeBatch(db);
+      batch.delete(doc(db, 'matches', mId));
+
+      const q = query(collection(db, 'predictions'), where('matchId', '==', mId));
+      const snap = await getDocs(q);
+      snap.forEach((d) => batch.delete(d.ref));
+
+      await batch.commit();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `delete-match-${mId}`);
+    }
   };
 
   // Participant administration
-  const handleAddParticipant = (newP: Omit<Participant, 'id'>) => {
+  const handleAddParticipant = async (newP: Omit<Participant, 'id'>) => {
+    const pId = 'p_' + Date.now().toString();
     const pWithId: Participant = {
       ...newP,
-      id: 'p_' + Date.now().toString()
+      id: pId
     };
     setParticipants((prev) => [...prev, pWithId]);
+
+    try {
+      await setDoc(doc(db, 'participants', pId), { ...pWithId, role: pWithId.role || '' });
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `participants/${pId}`);
+    }
   };
 
-  const handleDeleteParticipant = (pId: string) => {
+  const handleDeleteParticipant = async (pId: string) => {
     setParticipants((prev) => prev.filter((p) => p.id !== pId));
-    // Clean up predictions
     setPredictions((prev) => prev.filter((pr) => pr.participantId !== pId));
+
+    try {
+      const batch = writeBatch(db);
+      batch.delete(doc(db, 'participants', pId));
+
+      const q = query(collection(db, 'predictions'), where('participantId', '==', pId));
+      const snap = await getDocs(q);
+      snap.forEach((d) => batch.delete(d.ref));
+
+      await batch.commit();
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, `delete-participant-${pId}`);
+    }
   };
 
   // Live Scoring Configuration Change
   const handleUpdateScoringRules = (field: keyof ScoringConfig, val: number) => {
-    setScoringConfig((prev) => ({
-      ...prev,
+    const nextConfig = {
+      ...scoringConfig,
       [field]: val
-    }));
+    };
+    setScoringConfig(nextConfig);
+
+    try {
+      setDoc(doc(db, 'scoringConfig', 'default'), nextConfig);
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'scoringConfig/default');
+    }
   };
 
   // Export spreadsheet directly as CSV (Excel compatible)
@@ -241,25 +404,61 @@ export default function App() {
   };
 
   // Fresh reset back to default mock data
-  const handleResetToDefault = () => {
-    if (confirm('Bạn có chắc chắn muốn RESET dữ liệu về trạng thái mẫu? Thao tác này sẽ xóa các thay đổi hiện tại.')) {
-      setParticipants(INITIAL_PARTICIPANTS);
-      setMatches(INITIAL_MATCHES);
-      setPredictions(INITIAL_PREDICTIONS);
-      setScoringConfig(DEFAULT_SCORING);
-      localStorage.removeItem('wc_office_fines_log'); // clear penalty register
-      alert('Đã thiết lập lại dữ liệu thành công!');
+  const handleResetToDefault = async () => {
+    if (confirm('Bạn có chắc chắn muốn RESET dữ liệu về trạng thái mẫu trên Cloud? Thao tác này sẽ đặt lại tất cả thiết bị đồng hồ & máy tính.')) {
+      try {
+        const batch = writeBatch(db);
+
+        const matchesSnap = await getDocs(collection(db, 'matches'));
+        matchesSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        const participantsSnap = await getDocs(collection(db, 'participants'));
+        participantsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        const predictionsSnap = await getDocs(collection(db, 'predictions'));
+        predictionsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        INITIAL_PARTICIPANTS.forEach((p) => {
+          batch.set(doc(db, 'participants', p.id), { ...p, role: p.role || '' });
+        });
+        INITIAL_MATCHES.forEach((m) => {
+          batch.set(doc(db, 'matches', m.id), m);
+        });
+        INITIAL_PREDICTIONS.forEach((pr) => {
+          batch.set(doc(db, 'predictions', `${pr.participantId}_${pr.matchId}`), pr);
+        });
+        batch.set(doc(db, 'scoringConfig', 'default'), DEFAULT_SCORING);
+
+        await batch.commit();
+        localStorage.removeItem('wc_office_fines_log'); // clear penalty register
+        alert('Đã reset và thiết lập lại dữ liệu thành công trên Cloud!');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, 'reset-database');
+      }
     }
   };
 
   // Nuclear wipeout (completely clean start)
-  const handleClearAll = () => {
-    if (confirm('BẠN CÓ CHẮC CHẮN MUỐN XÓA SẠCH DỮ LIỆU? Bạn sẽ bắt đầu một bảng tính hoàn toàn trống.')) {
-      setParticipants([]);
-      setMatches([]);
-      setPredictions([]);
-      localStorage.removeItem('wc_office_fines_log');
-      alert('Đã xóa sạch dữ liệu. Hãy thêm Trận Đấu và Thành Viên mới nhé!');
+  const handleClearAll = async () => {
+    if (confirm('BẠN CÓ CHẮC CHẮN MUỐN XÓA SẠCH DỮ LIỆU? Toàn bộ bảng trống sẽ đồng bộ qua điện thoại và máy tính.')) {
+      try {
+        const batch = writeBatch(db);
+
+        const matchesSnap = await getDocs(collection(db, 'matches'));
+        matchesSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        const participantsSnap = await getDocs(collection(db, 'participants'));
+        participantsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        const predictionsSnap = await getDocs(collection(db, 'predictions'));
+        predictionsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        await batch.commit();
+        localStorage.removeItem('wc_office_fines_log');
+        alert('Đã xóa sạch dữ liệu trên đám mây quốc tế!');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, 'clear-database');
+      }
     }
   };
 

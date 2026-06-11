@@ -1,0 +1,127 @@
+{
+  "entities": {
+    "Participant": {
+      "title": "Participant",
+      "description": "A office member who participates in guessing match outcomes",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the participant"
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the colleague"
+        },
+        "avatarColor": {
+          "type": "string",
+          "description": "Tailwind bg color CSS class"
+        },
+        "role": {
+          "type": "string",
+          "description": "Optional office role description"
+        }
+      },
+      "required": ["id", "name", "avatarColor"]
+    },
+    "Match": {
+      "title": "Match",
+      "description": "A scheduled football match showing goals and handicaps",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique key identifier"
+        },
+        "teamA": {
+          "type": "string",
+          "description": "Name of team A and flag"
+        },
+        "teamB": {
+          "type": "string",
+          "description": "Name of team B and flag"
+        },
+        "dateTime": {
+          "type": "string",
+          "description": "ISO timestamp for match start"
+        },
+        "stage": {
+          "type": "string",
+          "description": "Tournament stage detail"
+        },
+        "scoreA": {
+          "type": "integer",
+          "description": "Score of team A. Null if unplayed"
+        },
+        "scoreB": {
+          "type": "integer",
+          "description": "Score of team B. Null if unplayed"
+        },
+        "handicap": {
+          "type": "number",
+          "description": "Handicap points where team A is favored (+) or B favored (-)"
+        }
+      },
+      "required": ["id", "teamA", "teamB", "dateTime", "stage", "handicap"]
+    },
+    "Prediction": {
+      "title": "Prediction",
+      "description": "A specific participant's vote preference on a match",
+      "type": "object",
+      "properties": {
+        "participantId": {
+          "type": "string",
+          "description": "Foreign key reference to Participant row"
+        },
+        "matchId": {
+          "type": "string",
+          "description": "Foreign key reference to Match row"
+        },
+        "choice": {
+          "type": "string",
+          "enum": ["A", "B"],
+          "description": "Choice selection: Team A (A) or Team B (B)"
+        }
+      },
+      "required": ["participantId", "matchId", "choice"]
+    },
+    "ScoringConfig": {
+      "title": "ScoringConfig",
+      "description": "Configuration points award metrics",
+      "type": "object",
+      "properties": {
+        "exactScore": {
+          "type": "integer",
+          "description": "Point penalty factor for wrong scores in this round"
+        },
+        "correctOutcome": {
+          "type": "integer",
+          "description": "Outcome matching rule"
+        },
+        "wrongOutcome": {
+          "type": "integer",
+          "description": "Penalty multiplier"
+        }
+      },
+      "required": ["exactScore", "correctOutcome", "wrongOutcome"]
+    }
+  },
+  "firestore": {
+    "participants/{participantId}": {
+      "schema": "Participant",
+      "description": "List of office members"
+    },
+    "matches/{matchId}": {
+      "schema": "Match",
+      "description": "Tournament matches"
+    },
+    "predictions/{predictionId}": {
+      "schema": "Prediction",
+      "description": "Compound document with id structure p_[participantId]_m_[matchId]"
+    },
+    "scoringConfig/default": {
+      "schema": "ScoringConfig",
+      "description": "Single document holding active scoring ratios"
+    }
+  }
+}
