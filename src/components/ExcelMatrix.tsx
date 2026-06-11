@@ -940,7 +940,7 @@ export default function ExcelMatrix({
                                   e.stopPropagation();
                                   handleSelectChoice('A');
                                 }}
-                                className="flex-1 py-1 bg-blue-500 hover:bg-blue-600 border border-slate-950 text-white rounded text-[10px] font-black uppercase truncate px-0.5"
+                                className="flex-grow py-1 bg-blue-500 hover:bg-blue-600 border border-slate-950 text-white rounded text-[10px] font-black uppercase truncate px-0.5"
                                 title={m.teamA}
                               >
                                 {m.teamA.split(' ')[0]}
@@ -950,11 +950,23 @@ export default function ExcelMatrix({
                                   e.stopPropagation();
                                   handleSelectChoice('B');
                                 }}
-                                className="flex-1 py-1 bg-red-500 hover:bg-red-600 border border-slate-950 text-white rounded text-[10px] font-black uppercase truncate px-0.5"
+                                className="flex-grow py-1 bg-red-500 hover:bg-red-600 border border-slate-950 text-white rounded text-[10px] font-black uppercase truncate px-0.5"
                                 title={m.teamB}
                               >
                                 {m.teamB.split(' ')[0]}
                               </button>
+                              {pred && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectChoice(null);
+                                  }}
+                                  className="px-1.5 py-1 bg-amber-500 hover:bg-amber-600 border border-slate-950 text-white rounded text-[9px] font-black"
+                                  title="Hủy Vote"
+                                >
+                                  Xoá
+                                </button>
+                              )}
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -962,7 +974,7 @@ export default function ExcelMatrix({
                                 }}
                                 className="px-1 bg-white hover:bg-slate-200 border border-slate-950 rounded text-slate-800 text-[9px] font-bold"
                               >
-                                Hủy
+                                Đóng
                               </button>
                             </div>
                           </div>

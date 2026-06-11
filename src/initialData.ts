@@ -32,364 +32,106 @@ export const INITIAL_PARTICIPANTS: Participant[] = [
 ];
 
 export const INITIAL_MATCHES: Match[] = [
-  {
-    id: 'm1',
-    teamA: 'Mexico 🇲🇽',
-    teamB: 'Nam Phi 🇿🇦',
-    dateTime: '2026-06-12T04:00:00',
-    stage: 'Bảng A (Sân Mexico 🇲🇽)',
-    scoreA: 2,
-    scoreB: 1,
-    handicap: 0.5
-  },
-  {
-    id: 'm2',
-    teamA: 'Hàn Quốc 🇰🇷',
-    teamB: 'TBD ❓',
-    dateTime: '2026-06-12T11:00:00',
-    stage: 'Bảng B (Sân Mỹ 🇺🇸)',
-    scoreA: 1,
-    scoreB: 1,
-    handicap: 1.5
-  },
-  {
-    id: 'm3',
-    teamA: 'Canada 🇨🇦',
-    teamB: 'TBD ❓',
-    dateTime: '2026-06-13T03:00:00',
-    stage: 'Bảng C (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm4',
-    teamA: 'Mỹ 🇺🇸',
-    teamB: 'Paraguay 🇵🇾',
-    dateTime: '2026-06-13T12:00:00',
-    stage: 'Bảng D (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm5',
-    teamA: 'Qatar 🇶🇦',
-    teamB: 'Thụy Sĩ 🇨🇭',
-    dateTime: '2026-06-14T06:00:00',
-    stage: 'Bảng A (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm6',
-    teamA: 'Brazil 🇧🇷',
-    teamB: 'Morocco 🇲🇦',
-    dateTime: '2026-06-14T06:00:00',
-    stage: 'Bảng B (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm7',
-    teamA: 'Haiti 🇭🇹',
-    teamB: 'Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿',
-    dateTime: '2026-06-14T09:00:00',
-    stage: 'Bảng D (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm8',
-    teamA: 'Australia 🇦🇺',
-    teamB: 'TBD ❓',
-    dateTime: '2026-06-14T15:00:00',
-    stage: 'Bảng C (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm9',
-    teamA: 'Đức 🇩🇪',
-    teamB: 'Curacao 🇨🇼',
-    dateTime: '2026-06-15T02:00:00',
-    stage: 'Bảng E (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm10',
-    teamA: 'Hà Lan 🇳🇱',
-    teamB: 'Nhật Bản 🇯🇵',
-    dateTime: '2026-06-15T05:00:00',
-    stage: 'Bảng F (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm11',
-    teamA: 'Bờ Biển Ngà 🇨🇮',
-    teamB: 'Ecuador 🇪🇨',
-    dateTime: '2026-06-15T07:00:00',
-    stage: 'Bảng E (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm12',
-    teamA: 'TBD ❓',
-    teamB: 'Tunisia 🇹🇳',
-    dateTime: '2026-06-15T11:00:00',
-    stage: 'Bảng F (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm13',
-    teamA: 'Tây Ban Nha 🇪🇸',
-    teamB: 'Cape Verde 🇨🇻',
-    dateTime: '2026-06-16T03:00:00',
-    stage: 'Bảng G (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm14',
-    teamA: 'Bỉ 🇧🇪',
-    teamB: 'Ai Cập 🇪🇬',
-    dateTime: '2026-06-16T06:00:00',
-    stage: 'Bảng H (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm15',
-    teamA: 'Saudi Arabia 🇸🇦',
-    teamB: 'Uruguay 🇺🇾',
-    dateTime: '2026-06-16T06:00:00',
-    stage: 'Bảng G (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm16',
-    teamA: 'Iran 🇮🇷',
-    teamB: 'New Zealand 🇳🇿',
-    dateTime: '2026-06-16T12:00:00',
-    stage: 'Bảng H (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm17',
-    teamA: 'Pháp 🇫🇷',
-    teamB: 'Senegal 🇸🇳',
-    dateTime: '2026-06-17T03:00:00',
-    stage: 'Bảng I (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm18',
-    teamA: 'TBD ❓',
-    teamB: 'Na Uy 🇳🇴',
-    dateTime: '2026-06-17T06:00:00',
-    stage: 'Bảng J (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm19',
-    teamA: 'Argentina 🇦🇷',
-    teamB: 'Algeria 🇩🇿',
-    dateTime: '2026-06-17T10:00:00',
-    stage: 'Bảng I (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm20',
-    teamA: 'Áo 🇦🇹',
-    teamB: 'Jordan 🇯🇴',
-    dateTime: '2026-06-17T15:00:00',
-    stage: 'Bảng J (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm21',
-    teamA: 'Bồ Đào Nha 🇵🇹',
-    teamB: 'TBD ❓',
-    dateTime: '2026-06-18T02:00:00',
-    stage: 'Bảng K (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 1.5
-  },
-  {
-    id: 'm22',
-    teamA: 'Anh 🏴󠁧󠁢󠁥󠁮󠁧󠁿',
-    teamB: 'Croatia 🇭🇷',
-    dateTime: '2026-06-18T05:00:00',
-    stage: 'Bảng L (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm23',
-    teamA: 'Ghana 🇬🇭',
-    teamB: 'Panama 🇵🇦',
-    dateTime: '2026-06-18T07:00:00',
-    stage: 'Bảng K (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm24',
-    teamA: 'Uzbekistan 🇺🇿',
-    teamB: 'Colombia 🇨🇴',
-    dateTime: '2026-06-18T11:00:00',
-    stage: 'Bảng L (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm25',
-    teamA: 'TBD ❓',
-    teamB: 'Nam Phi 🇿🇦',
-    dateTime: '2026-06-19T00:00:00',
-    stage: 'Bảng A (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: -0.5
-  },
-  {
-    id: 'm26',
-    teamA: 'Thụy Sĩ 🇨🇭',
-    teamB: 'TBD ❓',
-    dateTime: '2026-06-19T06:00:00',
-    stage: 'Bảng A (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm27',
-    teamA: 'Canada 🇨🇦',
-    teamB: 'Qatar 🇶🇦',
-    dateTime: '2026-06-19T07:00:00',
-    stage: 'Bảng C (Sân Canada 🇨🇦)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm28',
-    teamA: 'Mexico 🇲🇽',
-    teamB: 'Hàn Quốc 🇰🇷',
-    dateTime: '2026-06-19T10:00:00',
-    stage: 'Bảng B (Sân Mexico 🇲🇽)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  },
-  {
-    id: 'm38',
-    teamA: 'CHUNG KẾT 🏆',
-    teamB: 'WINNER SÂN MỸ',
-    dateTime: '2026-07-20T03:00:00',
-    stage: 'Chung Kết Toàn Cầu 🏆 (Sân Mỹ 🇺🇸)',
-    scoreA: null,
-    scoreB: null,
-    handicap: 0.5
-  }
+  // 12/06
+  { id: 'm1', teamA: 'Mexico 🇲🇽', teamB: 'Nam Phi 🇿🇦', dateTime: '2026-06-12T04:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm2', teamA: 'Hàn Quốc 🇰🇷', teamB: 'TBD ❓', dateTime: '2026-06-12T11:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0 },
+  // 13/06
+  { id: 'm3', teamA: 'Canada 🇨🇦', teamB: 'TBD ❓', dateTime: '2026-06-13T03:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm4', teamA: 'Mỹ 🇺🇸', teamB: 'Paraguay 🇵🇾', dateTime: '2026-06-13T12:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0.75 },
+  // 14/06
+  { id: 'm5', teamA: 'Qatar 🇶🇦', teamB: 'Thụy Sĩ 🇨🇭', dateTime: '2026-06-14T06:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm6', teamA: 'Brazil 🇧🇷', teamB: 'Morocco 🇲🇦', dateTime: '2026-06-14T06:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm7', teamA: 'Haiti 🇭🇹', teamB: 'Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿', dateTime: '2026-06-14T09:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm8', teamA: 'Australia 🇦🇺', teamB: 'TBD ❓', dateTime: '2026-06-14T15:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0.25 },
+  // 15/06
+  { id: 'm9', teamA: 'Đức 🇩🇪', teamB: 'Curacao 🇨🇼', dateTime: '2026-06-15T02:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm10', teamA: 'Hà Lan 🇳🇱', teamB: 'Nhật Bản 🇯🇵', dateTime: '2026-06-15T05:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm11', teamA: 'Bờ Biển Ngà 🇨🇮', teamB: 'Ecuador 🇪🇨', dateTime: '2026-06-15T07:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.75 },
+  { id: 'm12', teamA: 'TBD ❓', teamB: 'Tunisia 🇹🇳', dateTime: '2026-06-15T11:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0 },
+  // 16/06
+  { id: 'm13', teamA: 'Tây Ban Nha 🇪🇸', teamB: 'Cape Verde 🇨🇻', dateTime: '2026-06-16T03:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm14', teamA: 'Bỉ 🇧🇪', teamB: 'Ai Cập 🇪🇬', dateTime: '2026-06-16T06:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm15', teamA: 'Saudi Arabia 🇸🇦', teamB: 'Uruguay 🇺🇾', dateTime: '2026-06-16T06:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm16', teamA: 'Iran 🇮🇷', teamB: 'New Zealand 🇳🇿', dateTime: '2026-06-16T12:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0 },
+  // 17/06
+  { id: 'm17', teamA: 'Pháp 🇫🇷', teamB: 'Senegal 🇸🇳', dateTime: '2026-06-17T03:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm18', teamA: 'TBD ❓', teamB: 'Na Uy 🇳🇴', dateTime: '2026-06-17T06:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm19', teamA: 'Argentina 🇦🇷', teamB: 'Algeria 🇩🇿', dateTime: '2026-06-17T10:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm20', teamA: 'Áo 🇦🇹', teamB: 'Jordan 🇯🇴', dateTime: '2026-06-17T15:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0.5 },
+  // 18/06
+  { id: 'm21', teamA: 'Bồ Đào Nha 🇵🇹', teamB: 'TBD ❓', dateTime: '2026-06-18T02:00:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm22', teamA: 'Anh 🏴󠁧󠁢󠁥󠁮󠁧󠁿', teamB: 'Croatia 🇭🇷', dateTime: '2026-06-18T05:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm23', teamA: 'Ghana 🇬🇭', teamB: 'Panama 🇵🇦', dateTime: '2026-06-18T07:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm24', teamA: 'Uzbekistan 🇺🇿', teamB: 'Colombia 🇨🇴', dateTime: '2026-06-18T11:00:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0.25 },
+
+  // 19/06
+  { id: 'm25', teamA: 'TBD ❓', teamB: 'Nam Phi 🇿🇦', dateTime: '2026-06-19T00:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm26', teamA: 'Thụy Sĩ 🇨🇭', teamB: 'TBD ❓', dateTime: '2026-06-19T06:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm27', teamA: 'Canada 🇨🇦', teamB: 'Qatar 🇶🇦', dateTime: '2026-06-19T07:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm28', teamA: 'Mexico 🇲🇽', teamB: 'Hàn Quốc 🇰🇷', dateTime: '2026-06-19T10:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0 },
+  // 20/06
+  { id: 'm29', teamA: 'Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿', teamB: 'Morocco 🇲🇦', dateTime: '2026-06-20T06:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm30', teamA: 'Mỹ 🇺🇸', teamB: 'Australia 🇦🇺', dateTime: '2026-06-20T06:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm31', teamA: 'Brazil 🇧🇷', teamB: 'Haiti 🇭🇹', dateTime: '2026-06-20T09:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0.75 },
+  { id: 'm32', teamA: 'TBD ❓', teamB: 'Paraguay 🇵🇾', dateTime: '2026-06-20T15:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0 },
+  // 21/06
+  { id: 'm33', teamA: 'Hà Lan 🇳🇱', teamB: 'TBD ❓', dateTime: '2026-06-21T02:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm34', teamA: 'Đức 🇩🇪', teamB: 'Bờ Biển Ngà 🇨🇮', dateTime: '2026-06-21T04:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm35', teamA: 'Ecuador 🇪🇨', teamB: 'Curacao 🇨🇼', dateTime: '2026-06-21T11:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm36', teamA: 'Tunisia 🇹🇳', teamB: 'Nhật Bản 🇯🇵', dateTime: '2026-06-21T13:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0 },
+  // 22/06
+  { id: 'm37', teamA: 'Tây Ban Nha 🇪🇸', teamB: 'Saudi Arabia 🇸🇦', dateTime: '2026-06-22T00:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm38', teamA: 'Bỉ 🇧🇪', teamB: 'Iran 🇮🇷', dateTime: '2026-06-22T06:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm39', teamA: 'Uruguay 🇺🇾', teamB: 'Cape Verde 🇨🇻', dateTime: '2026-06-22T09:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm40', teamA: 'New Zealand 🇳🇿', teamB: 'Ai Cập 🇪🇬', dateTime: '2026-06-22T12:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0 },
+  // 23/06
+  { id: 'm41', teamA: 'Argentina 🇦🇷', teamB: 'Áo 🇦🇹', dateTime: '2026-06-23T02:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm42', teamA: 'Pháp 🇫🇷', teamB: 'TBD ❓', dateTime: '2026-06-23T05:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm43', teamA: 'Na Uy 🇳🇴', teamB: 'Senegal 🇸🇳', dateTime: '2026-06-23T08:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm44', teamA: 'Jordan 🇯🇴', teamB: 'Algeria 🇩🇿', dateTime: '2026-06-23T14:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0 },
+  // 25/06
+  { id: 'm45', teamA: 'Thụy Sĩ 🇨🇭', teamB: 'Canada 🇨🇦', dateTime: '2026-06-25T06:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm46', teamA: 'TBD ❓', teamB: 'Qatar 🇶🇦', dateTime: '2026-06-25T06:00:00', stage: 'Bảng B', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm47', teamA: 'Scotland 🏴󠁧󠁢󠁳󠁣󠁴󠁿', teamB: 'Brazil 🇧🇷', dateTime: '2026-06-25T06:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm48', teamA: 'Morocco 🇲🇦', teamB: 'Haiti 🇭🇹', dateTime: '2026-06-25T06:00:00', stage: 'Bảng C', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm49', teamA: 'TBD ❓', teamB: 'Mexico 🇲🇽', dateTime: '2026-06-25T11:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm50', teamA: 'Nam Phi 🇿🇦', teamB: 'Hàn Quốc 🇰🇷', dateTime: '2026-06-25T14:00:00', stage: 'Bảng A', scoreA: null, scoreB: null, handicap: 0 },
+  // 26/06 (First Friday Box)
+  { id: 'm51', teamA: 'Bồ Đào Nha 🇵🇹', teamB: 'Uzbekistan 🇺🇿', dateTime: '2026-06-26T02:00:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm52', teamA: 'Anh 🏴󠁧󠁢󠁥󠁮󠁧󠁿', teamB: 'Ghana 🇬🇭', dateTime: '2026-06-26T05:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm53', teamA: 'Panama 🇵🇦', teamB: 'Croatia 🇭🇷', dateTime: '2026-06-26T07:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm54', teamA: 'Colombia 🇨🇴', teamB: 'TBD ❓', dateTime: '2026-06-26T11:00:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0 },
+
+  // 26/06 (Second Friday Box)
+  { id: 'm55', teamA: 'Ecuador 🇪🇨', teamB: 'Đức 🇩🇪', dateTime: '2026-06-26T04:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm56', teamA: 'Curacao 🇨🇼', teamB: 'Bờ Biển Ngà 🇨🇮', dateTime: '2026-06-26T04:00:00', stage: 'Bảng E', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm57', teamA: 'Nhật Bản 🇯🇵', teamB: 'TBD ❓', dateTime: '2026-06-26T08:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm58', teamA: 'Tunisia 🇹🇳', teamB: 'Hà Lan 🇳🇱', dateTime: '2026-06-26T08:00:00', stage: 'Bảng F', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm59', teamA: 'TBD ❓', teamB: 'Mỹ 🇺🇸', dateTime: '2026-06-26T13:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0.75 },
+  { id: 'm60', teamA: 'Paraguay 🇵🇾', teamB: 'Australia 🇦🇺', dateTime: '2026-06-26T13:00:00', stage: 'Bảng D', scoreA: null, scoreB: null, handicap: 0 },
+  // 27/06
+  { id: 'm61', teamA: 'Na Uy 🇳🇴', teamB: 'Pháp 🇫🇷', dateTime: '2026-06-27T03:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm62', teamA: 'Senegal 🇸🇳', teamB: 'TBD ❓', dateTime: '2026-06-27T03:00:00', stage: 'Bảng I', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm63', teamA: 'Cape Verde 🇨🇻', teamB: 'Saudi Arabia 🇸🇦', dateTime: '2026-06-27T09:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm64', teamA: 'Uruguay 🇺🇾', teamB: 'Tây Ban Nha 🇪🇸', dateTime: '2026-06-27T09:00:00', stage: 'Bảng G', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm65', teamA: 'Ai Cập 🇪🇬', teamB: 'Iran 🇮🇷', dateTime: '2026-06-27T11:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm66', teamA: 'New Zealand 🇳🇿', teamB: 'Bỉ 🇧🇪', dateTime: '2026-06-27T14:00:00', stage: 'Bảng H', scoreA: null, scoreB: null, handicap: 0 },
+  // 28/06
+  { id: 'm67', teamA: 'Panama 🇵🇦', teamB: 'Anh 🏴󠁧󠁢󠁥󠁮󠁧󠁿', dateTime: '2026-06-28T05:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm68', teamA: 'Croatia 🇭🇷', teamB: 'Ghana 🇬🇭', dateTime: '2026-06-28T05:00:00', stage: 'Bảng L', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm69', teamA: 'Colombia 🇨🇴', teamB: 'Bồ Đào Nha 🇵🇹', dateTime: '2026-06-28T09:30:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm70', teamA: 'TBD ❓', teamB: 'Uzbekistan 🇺🇿', dateTime: '2026-06-28T09:30:00', stage: 'Bảng K', scoreA: null, scoreB: null, handicap: 0 },
+  { id: 'm71', teamA: 'Algeria 🇩🇿', teamB: 'Áo 🇦🇹', dateTime: '2026-06-28T11:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0.25 },
+  { id: 'm72', teamA: 'Jordan 🇯🇴', teamB: 'Argentina 🇦🇷', dateTime: '2026-06-28T11:00:00', stage: 'Bảng J', scoreA: null, scoreB: null, handicap: 0.5 },
+
+  // Vòng Loại Trực Tiếp (Vòng cuối nổi bật)
+  { id: 'm101', teamA: 'Bán Kết 1 🏆', teamB: 'Đối thủ 🏆', dateTime: '2026-07-15T04:00:00', stage: 'Bán Kết 1', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm102', teamA: 'Bán Kết 2 🏆', teamB: 'Đối thủ 🏆', dateTime: '2026-07-16T03:00:00', stage: 'Bán Kết 2', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm103', teamA: 'Tranh Hạng Ba 🥉', teamB: 'Đối thủ 🥉', dateTime: '2026-07-19T05:00:00', stage: 'Tranh Hạng Ba', scoreA: null, scoreB: null, handicap: 0.5 },
+  { id: 'm104', teamA: 'Chung Kết 🏆', teamB: 'Thời Khắc Vàng', dateTime: '2026-07-20T03:00:00', stage: 'Chung Kết', scoreA: null, scoreB: null, handicap: 0.5 }
 ];
 
-export const INITIAL_PREDICTIONS: Prediction[] = [
-  // Trận m1 (Mexico vs Nam Phi) -> Mexico chấp 0.5. Actual score 2 - 1 -> Mexico wins handicap.
-  { participantId: 'p1', matchId: 'm1', choice: 'A' },
-  { participantId: 'p2', matchId: 'm1', choice: 'A' },
-  { participantId: 'p3', matchId: 'm1', choice: 'A' },
-  { participantId: 'p4', matchId: 'm1', choice: 'B' },
-  { participantId: 'p5', matchId: 'm1', choice: 'A' },
-  { participantId: 'p6', matchId: 'm1', choice: 'A' },
-  { participantId: 'p7', matchId: 'm1', choice: 'B' },
-  { participantId: 'p8', matchId: 'm1', choice: 'A' },
-  { participantId: 'p9', matchId: 'm1', choice: 'A' },
-  { participantId: 'p10', matchId: 'm1', choice: 'B' },
-  { participantId: 'p11', matchId: 'm1', choice: 'A' },
-  { participantId: 'p12', matchId: 'm1', choice: 'A' },
-  { participantId: 'p13', matchId: 'm1', choice: 'A' },
-  { participantId: 'p14', matchId: 'm1', choice: 'B' },
-  { participantId: 'p15', matchId: 'm1', choice: 'A' },
-  { participantId: 'p16', matchId: 'm1', choice: 'B' },
-  { participantId: 'p17', matchId: 'm1', choice: 'A' },
-  { participantId: 'p18', matchId: 'm1', choice: 'A' },
-  { participantId: 'p19', matchId: 'm1', choice: 'A' },
-  { participantId: 'p20', matchId: 'm1', choice: 'B' },
-  { participantId: 'p21', matchId: 'm1', choice: 'A' },
-  { participantId: 'p22', matchId: 'm1', choice: 'A' },
-  { participantId: 'p23', matchId: 'm1', choice: 'B' },
-  { participantId: 'p24', matchId: 'm1', choice: 'A' },
-  { participantId: 'p25', matchId: 'm1', choice: 'A' },
-  { participantId: 'p26', matchId: 'm1', choice: 'A' },
-  { participantId: 'p27', matchId: 'm1', choice: 'B' },
-  { participantId: 'p28', matchId: 'm1', choice: 'A' },
-
-  // Trận m2 (Hàn Quốc 1 - 1 TBD) -> Hàn Quốc -1.5 -> -0.5 < 1, B thắng handicap
-  { participantId: 'p1', matchId: 'm2', choice: 'B' },
-  { participantId: 'p2', matchId: 'm2', choice: 'B' },
-  { participantId: 'p3', matchId: 'm2', choice: 'B' },
-  { participantId: 'p4', matchId: 'm2', choice: 'A' },
-  { participantId: 'p5', matchId: 'm2', choice: 'B' },
-  { participantId: 'p6', matchId: 'm2', choice: 'B' },
-  { participantId: 'p7', matchId: 'm2', choice: 'A' },
-  { participantId: 'p8', matchId: 'm2', choice: 'B' },
-  { participantId: 'p9', matchId: 'm2', choice: 'A' },
-  { participantId: 'p10', matchId: 'm2', choice: 'B' },
-  { participantId: 'p11', matchId: 'm2', choice: 'B' },
-  { participantId: 'p12', matchId: 'm2', choice: 'A' },
-  { participantId: 'p13', matchId: 'm2', choice: 'B' },
-  { participantId: 'p14', matchId: 'm2', choice: 'B' },
-  { participantId: 'p15', matchId: 'm2', choice: 'B' },
-  { participantId: 'p16', matchId: 'm2', choice: 'A' },
-  { participantId: 'p17', matchId: 'm2', choice: 'B' },
-  { participantId: 'p18', matchId: 'm2', choice: 'A' },
-  { participantId: 'p19', matchId: 'm2', choice: 'B' },
-  { participantId: 'p20', matchId: 'm2', choice: 'A' },
-  { participantId: 'p21', matchId: 'm2', choice: 'B' },
-  { participantId: 'p22', matchId: 'm2', choice: 'A' },
-  { participantId: 'p23', matchId: 'm2', choice: 'B' },
-  { participantId: 'p24', matchId: 'm2', choice: 'B' },
-  { participantId: 'p25', matchId: 'm2', choice: 'A' },
-  { participantId: 'p26', matchId: 'm2', choice: 'B' },
-  { participantId: 'p27', matchId: 'm2', choice: 'B' },
-  { participantId: 'p28', matchId: 'm2', choice: 'B' },
-
-  // Trận 3 (Canada vs TBD) làm ví dụ dự báo
-  { participantId: 'p1', matchId: 'm3', choice: 'A' },
-  { participantId: 'p2', matchId: 'm3', choice: 'A' },
-  { participantId: 'p3', matchId: 'm3', choice: 'A' }
-];
+export const INITIAL_PREDICTIONS: Prediction[] = [];
 
 export const DEFAULT_SCORING: ScoringConfig = {
   exactScore: 10,

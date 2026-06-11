@@ -74,7 +74,14 @@ export default function App() {
         if (parsed.length < 15 || parsed.some((m: any) => m.teamB === 'Togo 🇹🇬')) {
           return INITIAL_MATCHES;
         }
-        return parsed;
+        return [...parsed].sort((a: Match, b: Match) => {
+          const timeA = new Date(a.dateTime || '').getTime();
+          const timeB = new Date(b.dateTime || '').getTime();
+          if (timeA !== timeB) return timeA - timeB;
+          const idA = parseInt(a.id.replace(/\D/g, '')) || 0;
+          const idB = parseInt(b.id.replace(/\D/g, '')) || 0;
+          return idA - idB;
+        });
       } catch (e) {
         return INITIAL_MATCHES;
       }
@@ -110,9 +117,9 @@ export default function App() {
   const [showBulkSplitter, setShowBulkSplitter] = useState(false);
   const [useIPhoneFrame, setUseIPhoneFrame] = useState(false);
 
-  // Firestore automatic seed & real-time sync listeners
+  // Firestore automatic seed & real-time sync listeners & automated WC 2026 schedule correction
   useEffect(() => {
-    const checkAndSeed = async () => {
+    const checkAndSeedAndMigrate = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'participants'));
         if (querySnapshot.empty) {
@@ -130,12 +137,42 @@ export default function App() {
           batch.set(doc(db, 'scoringConfig', 'default'), DEFAULT_SCORING);
           await batch.commit();
           console.log('Seeding completed successfully!');
+          localStorage.setItem('wc_2026_schedule_migrated_v6', 'true');
+        } else {
+          // One-time automatic migration: replace incorrect matches and clear predictions/votes as requested
+          const migrated = localStorage.getItem('wc_2026_schedule_migrated_v6');
+          if (!migrated) {
+            console.log('Migrating Firestore database to official WC 2026 schedule and clearing predictions...');
+            const batch = writeBatch(db);
+
+            // 1. Wipe old matches
+            const matchesSnap = await getDocs(collection(db, 'matches'));
+            matchesSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+            // 2. Set corrected official matches
+            INITIAL_MATCHES.forEach((m) => {
+              batch.set(doc(db, 'matches', m.id), m);
+            });
+
+            // 3. Clear predictions
+            const predictionsSnap = await getDocs(collection(db, 'predictions'));
+            predictionsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+            await batch.commit();
+
+            setMatches(INITIAL_MATCHES);
+            setPredictions([]);
+            localStorage.setItem('wc_office_matches', JSON.stringify(INITIAL_MATCHES));
+            localStorage.setItem('wc_office_predictions', JSON.stringify([]));
+            localStorage.setItem('wc_2026_schedule_migrated_v6', 'true');
+            console.log('Automatic World Cup 2026 migration executed successfully!');
+          }
         }
       } catch (err) {
-        console.error('Error auto-seeding Firestore:', err);
+        console.error('Error seeding/migrating Firestore:', err);
       }
     };
-    checkAndSeed();
+    checkAndSeedAndMigrate();
   }, []);
 
   useEffect(() => {
@@ -159,7 +196,12 @@ export default function App() {
       });
       if (list.length > 0) {
         const sortedList = [...list].sort((a, b) => {
-          return a.id.localeCompare(b.id);
+          const timeA = new Date(a.dateTime || '').getTime();
+          const timeB = new Date(b.dateTime || '').getTime();
+          if (timeA !== timeB) return timeA - timeB;
+          const idA = parseInt(a.id.replace(/\D/g, '')) || 0;
+          const idB = parseInt(b.id.replace(/\D/g, '')) || 0;
+          return idA - idB;
         });
         setMatches(sortedList);
         localStorage.setItem('wc_office_matches', JSON.stringify(sortedList));
@@ -469,6 +511,47 @@ export default function App() {
     }
   };
 
+  // Clear only predictions (votes) for all participants (preserving participants and matches)
+  const handleClearOnlyPredictions = async () => {
+    if (confirm('Bạn có chắc chắn muốn XÓA SẠCH VOTE (dự đoán) của tất cả mọi người? Lịch thi đấu và danh sách nhân sự văn phòng vẫn được giữ nguyên.')) {
+      try {
+        const batch = writeBatch(db);
+        const predictionsSnap = await getDocs(collection(db, 'predictions'));
+        predictionsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+        await batch.commit();
+
+        setPredictions([]);
+        localStorage.setItem('wc_office_predictions', JSON.stringify([]));
+        alert('Đã xóa sạch dự đoán (vote) của tất cả mọi người thành công!');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, 'clear-only-predictions');
+      }
+    }
+  };
+
+  // Restore only official World Cup 2026 matches list (preserving participants and predictions)
+  const handleRestoreWC2026MatchesOnly = async () => {
+    if (confirm('Bạn có chắc chắn muốn đồng bộ lại LỊCH THI ĐẤU World Cup 2026 chuẩn từ FIFA? Danh sách nhân sự và các lượt dự đoán khác sẽ được giữ nguyên.')) {
+      try {
+        const batch = writeBatch(db);
+        const matchesSnap = await getDocs(collection(db, 'matches'));
+        matchesSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+        INITIAL_MATCHES.forEach((m) => {
+          batch.set(doc(db, 'matches', m.id), m);
+        });
+
+        await batch.commit();
+
+        setMatches(INITIAL_MATCHES);
+        localStorage.setItem('wc_office_matches', JSON.stringify(INITIAL_MATCHES));
+        alert('Đã cập nhật & đồng bộ lịch thi đấu World Cup 2026 chuẩn thành công!');
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, 'restore-wc-matches');
+      }
+    }
+  };
+
   // Adaptive content renderer
   const renderAppContent = (isSimulatedMobile: boolean) => {
     return (
@@ -603,20 +686,36 @@ export default function App() {
                 {/* EMERGENCY DATA WIPEOUTS */}
                 <div className="space-y-3 bg-red-50 p-4 rounded border-2 border-red-950 shadow-[4px_4px_0px_#991B1B]">
                   <span className="text-[9px] md:text-[10px] font-black text-red-700 uppercase tracking-widest block font-sans">CÀI ĐẶT LẠI HỆ THỐNG</span>
-                  <p className="text-[11px] text-red-800">Cần khôi phục dữ liệu gốc hoặc dọn dẹp sạch toàn bộ bảng.</p>
+                  <p className="text-[11px] text-red-800">Cần khôi phục dữ liệu gốc hoặc dọn dẹp sạch toàn bộ bảng lịch đấu/dự đoán.</p>
                   
-                  <div className="flex gap-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={handleRestoreWC2026MatchesOnly}
+                      className="py-1.5 bg-emerald-700 hover:bg-emerald-600 border border-[#047857] text-white text-[10px] md:text-xs font-black rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer shadow-[1px_1px_0px_#000]"
+                      title="Đồng bộ lại lịch đấu World Cup 2026 chính thống, giữ nguyên nhân sự"
+                    >
+                      🔄 Lịch đấu WC 2026 Chuẩn
+                    </button>
+                    <button
+                      onClick={handleClearOnlyPredictions}
+                      className="py-1.5 bg-amber-500 hover:bg-amber-600 border border-[#D97706] text-white text-[10px] md:text-xs font-black rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer shadow-[1px_1px_0px_#000]"
+                      title="Xóa riêng lượt vote (dự đoán) của tất cả mọi người, giữ lại nhân sự"
+                    >
+                      🗑️ Xóa Riêng Lượt Vote
+                    </button>
                     <button
                       onClick={handleResetToDefault}
-                      className="flex-1 py-1.5 bg-white border-2 border-red-900 hover:bg-red-100 text-red-900 text-[10px] md:text-xs font-bold rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      className="py-1.5 bg-white border-2 border-red-900 hover:bg-red-100 text-red-900 text-[10px] md:text-xs font-bold rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer"
+                      title="Khởi tạo mẫu cơ sở dữ liệu mặc định ban đầu"
                     >
                       <RotateCcw className="w-3.5 h-3.5" /> Khởi tạo mẫu
                     </button>
                     <button
                       onClick={handleClearAll}
-                      className="flex-1 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] md:text-xs font-bold rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 border border-red-700 cursor-pointer"
+                      className="py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] md:text-xs font-bold rounded uppercase tracking-wider transition-all flex items-center justify-center gap-1 border border-red-700 cursor-pointer"
+                      title="Xóa trắng hoàn toàn cơ sở dữ liệu trên Cloud"
                     >
-                      <Trash2 className="w-3.5 h-3.5" /> Xóa sạch
+                      <Trash2 className="w-3.5 h-3.5" /> Xóa sạch dữ liệu
                     </button>
                   </div>
                 </div>
