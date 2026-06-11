@@ -10,7 +10,7 @@ interface ExcelMatrixProps {
   matches: Match[];
   predictions: Prediction[];
   scoringConfig: ScoringConfig;
-  onUpdatePrediction: (participantId: string, matchId: string, choice: 'A' | 'B') => void;
+  onUpdatePrediction: (participantId: string, matchId: string, choice: 'A' | 'B' | null) => void;
 }
 
 export default function ExcelMatrix({
@@ -36,7 +36,7 @@ export default function ExcelMatrix({
     setEditingCell({ pId, mId });
   };
 
-  const handleSelectChoice = (choice: 'A' | 'B') => {
+  const handleSelectChoice = (choice: 'A' | 'B' | null) => {
     if (editingCell) {
       onUpdatePrediction(editingCell.pId, editingCell.mId, choice);
       setEditingCell(null);
@@ -1051,10 +1051,21 @@ export default function ExcelMatrix({
               </div>
 
               <div className="flex gap-2 pt-3 border-t-2 border-slate-150">
+                {predictions.some(
+                  (pr) => pr.participantId === editingCell?.pId && pr.matchId === editingCell?.mId
+                ) && (
+                  <button
+                    type="button"
+                    onClick={() => handleSelectChoice(null)}
+                    className="flex-1 py-2 text-xs bg-amber-500 hover:bg-amber-600 text-white rounded border-2 border-slate-950 font-black uppercase tracking-wider cursor-pointer"
+                  >
+                    ❌ Huỷ Vote
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => setEditingCell(null)}
-                  className="flex-1 py-2 text-xs bg-white hover:bg-slate-100 text-slate-800 rounded border-2 border-slate-950 font-black uppercase tracking-wider"
+                  className="flex-1 py-2 text-xs bg-white hover:bg-slate-100 text-slate-800 rounded border-2 border-slate-950 font-black uppercase tracking-wider cursor-pointer"
                 >
                   Đóng Hủy
                 </button>

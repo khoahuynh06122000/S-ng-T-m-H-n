@@ -203,15 +203,22 @@ export default function App() {
   // --- ACTIONS & HANDLERS ---
 
   // Prediction updates
-  const handleUpdatePrediction = async (pId: string, mId: string, choice: 'A' | 'B') => {
+  const handleUpdatePrediction = async (pId: string, mId: string, choice: 'A' | 'B' | null) => {
     // Optimistic Update
     setPredictions((prev) => {
       const filtered = prev.filter((pr) => !(pr.participantId === pId && pr.matchId === mId));
+      if (choice === null) {
+        return filtered;
+      }
       return [...filtered, { participantId: pId, matchId: mId, choice }];
     });
 
     try {
-      await setDoc(doc(db, 'predictions', `${pId}_${mId}`), { participantId: pId, matchId: mId, choice });
+      if (choice === null) {
+        await deleteDoc(doc(db, 'predictions', `${pId}_${mId}`));
+      } else {
+        await setDoc(doc(db, 'predictions', `${pId}_${mId}`), { participantId: pId, matchId: mId, choice });
+      }
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `predictions/${pId}_${mId}`);
     }

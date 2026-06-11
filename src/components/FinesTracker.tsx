@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Participant, StandingRow, Match, Prediction } from '../types';
+import { calculatePoints } from '../utils';
 import { CalendarDays, AlertTriangle, Info, Clock, Save, Users, TrendingUp, Sparkles, Filter } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -8,7 +9,7 @@ interface FinesTrackerProps {
   standings: StandingRow[];
   matches: Match[];
   predictions: Prediction[];
-  onUpdatePrediction: (pId: string, mId: string, choice: 'A' | 'B') => void;
+  onUpdatePrediction: (pId: string, mId: string, choice: 'A' | 'B' | null) => void;
 }
 
 export default function FinesTracker({
@@ -71,7 +72,7 @@ export default function FinesTracker({
   const pctHome = totalPredicted > 0 ? Math.round((homeWins / totalPredicted) * 100) : 0;
   const pctAway = totalPredicted > 0 ? Math.round((awayWins / totalPredicted) * 100) : 0;
 
-  const handleSelectChoiceForParticipant = (pId: string, choice: 'A' | 'B') => {
+  const handleSelectChoiceForParticipant = (pId: string, choice: 'A' | 'B' | null) => {
     onUpdatePrediction(pId, selectedMatchId, choice);
     setEditingParticipantId(null);
   };
@@ -258,19 +259,28 @@ export default function FinesTracker({
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => handleSelectChoiceForParticipant(p.id, 'A')}
-                            className="bg-blue-500 hover:bg-blue-600 border border-slate-950 text-white font-black text-[9px] px-2 py-1 rounded uppercase"
+                            className="bg-blue-500 hover:bg-blue-600 border border-slate-950 text-white font-black text-[9px] px-2 py-1 rounded uppercase cursor-pointer"
                           >
                             {currentMatch?.teamA.split(' ')[0]}
                           </button>
                           <button
                             onClick={() => handleSelectChoiceForParticipant(p.id, 'B')}
-                            className="bg-red-500 hover:bg-red-600 border border-slate-950 text-white font-black text-[9px] px-2 py-1 rounded uppercase"
+                            className="bg-red-500 hover:bg-red-600 border border-slate-950 text-white font-black text-[9px] px-2 py-1 rounded uppercase cursor-pointer"
                           >
                             {currentMatch?.teamB.split(' ')[0]}
                           </button>
+                          {pred && (
+                            <button
+                              onClick={() => handleSelectChoiceForParticipant(p.id, null)}
+                              className="bg-amber-500 hover:bg-amber-600 border border-slate-950 text-white font-black text-[9px] px-2 py-1 rounded uppercase cursor-pointer"
+                              title="Huỷ lựa chọn dự đoán"
+                            >
+                              Huỷ Vote
+                            </button>
+                          )}
                           <button
                             onClick={() => setEditingParticipantId(null)}
-                            className="bg-slate-200 hover:bg-slate-350 text-slate-700 text-[9px] font-bold px-1.5 py-1 rounded"
+                            className="bg-slate-200 hover:bg-slate-350 text-slate-700 text-[9px] font-bold px-1.5 py-1 rounded cursor-pointer"
                           >
                             X
                           </button>
@@ -281,17 +291,33 @@ export default function FinesTracker({
                           className="flex items-center gap-2 cursor-pointer group-hover:bg-slate-100 p-0.5 px-2 rounded border border-transparent group-hover:border-slate-300 transition-all"
                         >
                           {pred ? (
-                            <span className={`font-black text-white px-2 py-0.5 rounded text-[10px] uppercase border shadow-sm ${
-                              pred.choice === 'A' 
-                                ? 'bg-blue-500 border-blue-600' 
-                                : 'bg-red-500 border-red-600'
-                            }`}>
-                              {pred.choice === 'A' ? currentMatch?.teamA : currentMatch?.teamB}
-                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className={`font-black text-white px-2 py-0.5 rounded text-[10px] uppercase border shadow-sm ${
+                                pred.choice === 'A' 
+                                  ? 'bg-blue-500 border-blue-600' 
+                                  : 'bg-red-500 border-red-600'
+                              }`}>
+                                {pred.choice === 'A' ? currentMatch?.teamA.split(' ')[0] : currentMatch?.teamB.split(' ')[0]}
+                              </span>
+                              {currentMatch?.scoreA !== null && currentMatch?.scoreB !== null && (() => {
+                                const { status } = calculatePoints(pred, currentMatch, { exactScore: 3, correctOutcome: 1, wrongOutcome: 0 });
+                                return status === 'outcome' ? (
+                                  <span className="text-[11px] text-emerald-600 font-bold" title="Đoán đúng">✅</span>
+                                ) : (
+                                  <span className="text-[11px] text-red-650 font-bold" title="Đoán sai">❌</span>
+                                );
+                              })()}
+                            </div>
                           ) : (
-                            <span className="text-[9px] text-amber-600 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded uppercase font-black tracking-tighter">
-                              VOTE NGAY ⚡
-                            </span>
+                            currentMatch?.scoreA !== null && currentMatch?.scoreB !== null ? (
+                              <span className="text-[9px] text-red-700 bg-red-100 border border-red-350 px-2 py-0.5 rounded uppercase font-black tracking-tighter flex items-center gap-0.5" title="Chưa vote bị nộp phạt">
+                                💀 Chưa vote (Phạt)
+                              </span>
+                            ) : (
+                              <span className="text-[9px] text-amber-600 bg-amber-50 border border-amber-300 px-2 py-0.5 rounded uppercase font-black tracking-tighter">
+                                VOTE NGAY ⚡
+                              </span>
+                            )
                           )}
                         </div>
                       )}
