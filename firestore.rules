@@ -51,8 +51,8 @@ service cloud.firestore {
         && isStringWithLimit(data.dateTime, 50)
         && isStringWithLimit(data.stage, 150)
         && isNumber(data.handicap)
-        && (!data.keys().hasAny(['scoreA']) || data.scoreA == null || isInt(data.scoreA))
-        && (!data.keys().hasAny(['scoreB']) || data.scoreB == null || isInt(data.scoreB));
+        && (!data.keys().hasAny(['scoreA']) || data.scoreA == null || isNumber(data.scoreA))
+        && (!data.keys().hasAny(['scoreB']) || data.scoreB == null || isNumber(data.scoreB));
     }
 
     function isValidPrediction(data) {

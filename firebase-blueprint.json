@@ -50,11 +50,11 @@
           "description": "Tournament stage detail"
         },
         "scoreA": {
-          "type": "integer",
+          "type": "number",
           "description": "Score of team A. Null if unplayed"
         },
         "scoreB": {
-          "type": "integer",
+          "type": "number",
           "description": "Score of team B. Null if unplayed"
         },
         "handicap": {
