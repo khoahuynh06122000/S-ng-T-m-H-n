@@ -48,8 +48,8 @@ export default function MatchList({
         // If empty, set back to null (unplayed)
         onUpdateMatchScore(matchId, null, null);
       } else {
-        const valA = parseFloat(scores.scoreA);
-        const valB = parseFloat(scores.scoreB);
+        const valA = parseFloat(scores.scoreA.replace(',', '.'));
+        const valB = parseFloat(scores.scoreB.replace(',', '.'));
         onUpdateMatchScore(
           matchId,
           isNaN(valA) ? 0 : valA,
@@ -83,7 +83,7 @@ export default function MatchList({
       stage,
       scoreA: null,
       scoreB: null,
-      handicap: parseFloat(handicap) || 0
+      handicap: parseFloat(handicap.toString().replace(',', '.')) || 0
     });
     // Reset form
     setTeamA('');
