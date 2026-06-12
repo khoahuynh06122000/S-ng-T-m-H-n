@@ -120,6 +120,14 @@ export default function App() {
   // Firestore automatic seed & real-time sync listeners & automated WC 2026 schedule correction
   useEffect(() => {
     const checkAndSeedAndMigrate = async () => {
+      // Avoid blocking, slow duplicate queries if database is already seeded locally
+      const isSeeded = localStorage.getItem('wc_office_db_seeded') === 'true';
+      const isMigrated = localStorage.getItem('wc_2026_schedule_migrated_v6') === 'true';
+      if (isSeeded && isMigrated) {
+        console.log('Database already initialized and migrated. Bypassing startup check for maximum speed!');
+        return;
+      }
+
       try {
         const querySnapshot = await getDocs(collection(db, 'participants'));
         if (querySnapshot.empty) {
@@ -137,8 +145,10 @@ export default function App() {
           batch.set(doc(db, 'scoringConfig', 'default'), DEFAULT_SCORING);
           await batch.commit();
           console.log('Seeding completed successfully!');
+          localStorage.setItem('wc_office_db_seeded', 'true');
           localStorage.setItem('wc_2026_schedule_migrated_v6', 'true');
         } else {
+          localStorage.setItem('wc_office_db_seeded', 'true');
           // One-time automatic migration: replace incorrect matches and clear predictions/votes as requested
           const migrated = localStorage.getItem('wc_2026_schedule_migrated_v6');
           if (!migrated) {
@@ -237,8 +247,10 @@ export default function App() {
     };
   }, []);
 
-  // Calculate standby statistics
-  const standings = getStandings(participants, matches, predictions, scoringConfig);
+  // Calculate standby statistics securely and quickly via useMemo
+  const standings = React.useMemo(() => {
+    return getStandings(participants, matches, predictions, scoringConfig);
+  }, [participants, matches, predictions, scoringConfig]);
 
   // --- ACTIONS & HANDLERS ---
 

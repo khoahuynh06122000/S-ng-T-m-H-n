@@ -111,6 +111,12 @@ export function getStandings(
   predictions: Prediction[],
   config: ScoringConfig
 ): StandingRow[] {
+  // Index predictions for O(1) fast lookup
+  const predictionsMap = new Map<string, Prediction>();
+  predictions.forEach((pr) => {
+    predictionsMap.set(`${pr.participantId}_${pr.matchId}`, pr);
+  });
+
   const standings: StandingRow[] = participants.map((p) => {
     let exactCount = 0;
     let outcomeCount = 0;
@@ -119,10 +125,8 @@ export function getStandings(
     let totalFines = 0;
 
     matches.forEach((m) => {
-      // Find prediction for this participant and match
-      const pred = predictions.find(
-        (pr) => pr.participantId === p.id && pr.matchId === m.id
-      );
+      // Find prediction for this participant and match via O(1) Map lookup
+      const pred = predictionsMap.get(`${p.id}_${m.id}`);
 
       if (pred) {
         predictedCount++;
