@@ -32,6 +32,20 @@ export default function ExcelMatrix({
   const fullTableRef = useRef<HTMLDivElement>(null);
   const focusedTableRef = useRef<HTMLDivElement>(null);
 
+  if (matches.length === 0) {
+    return (
+      <div className="bg-white border-4 border-slate-900 rounded-2xl p-12 text-center shadow-[8px_8px_0px_#1E293B]">
+        <div className="w-16 h-16 bg-slate-100 border-2 border-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">⚽</span>
+        </div>
+        <h3 className="text-lg font-black text-slate-900 uppercase tracking-tight">Chưa có trận đấu nào!</h3>
+        <p className="text-xs text-slate-500 font-semibold max-w-md mx-auto mt-2 uppercase tracking-tight">
+          Hiện tại danh sách lịch thi đấu đang trống. Trình quản trị viên hãy sang tab <strong className="text-indigo-600">Lịch thi đấu</strong> bên dưới để tự tay thêm các trận đấu mới nhé!
+        </p>
+      </div>
+    );
+  }
+
   const startEditCell = (pId: string, mId: string) => {
     setEditingCell({ pId, mId });
   };

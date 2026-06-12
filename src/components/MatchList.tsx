@@ -8,13 +8,15 @@ interface MatchListProps {
   onUpdateMatchScore: (matchId: string, scoreA: number | null, scoreB: number | null) => void;
   onAddMatch: (match: Omit<Match, 'id'>) => void;
   onDeleteMatch: (matchId: string) => void;
+  onClearAllMatches: () => void;
 }
 
 export default function MatchList({
   matches,
   onUpdateMatchScore,
   onAddMatch,
-  onDeleteMatch
+  onDeleteMatch,
+  onClearAllMatches
 }: MatchListProps) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterType, setFilterType] = useState<'all' | 'unplayed' | 'played'>('all');
@@ -46,7 +48,13 @@ export default function MatchList({
         // If empty, set back to null (unplayed)
         onUpdateMatchScore(matchId, null, null);
       } else {
-        onUpdateMatchScore(matchId, parseInt(scores.scoreA) || 0, parseInt(scores.scoreB) || 0);
+        const valA = parseFloat(scores.scoreA);
+        const valB = parseFloat(scores.scoreB);
+        onUpdateMatchScore(
+          matchId,
+          isNaN(valA) ? 0 : valA,
+          isNaN(valB) ? 0 : valB
+        );
       }
       
       // Remove match id from edit list to exit edit mode
@@ -132,13 +140,23 @@ export default function MatchList({
           </button>
         </div>
 
-        {/* ADD MATCH TRIGGER */}
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-350 text-slate-950 px-4 py-2.5 rounded border-2 border-slate-900 text-xs font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_#000] active:translate-y-0.5 cursor-pointer"
-        >
-          <Plus className="w-4 h-4 stroke-[3px]" /> THÊM TRẬN ĐẤU MỚI
-        </button>
+        {/* ADD MATCH TRIGGER & CLEAR TRIGGER */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {matches.length > 0 && (
+            <button
+              onClick={onClearAllMatches}
+              className="flex items-center gap-1.5 bg-red-650 hover:bg-red-700 text-white px-4 py-2.5 rounded border-2 border-slate-900 text-xs font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_#000] active:translate-y-0.5 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4 stroke-[3px]" /> XÓA HẾT LỊCH ĐẤU & VOTE
+            </button>
+          )}
+          <button
+            onClick={() => setShowAddForm(!showAddForm)}
+            className="flex items-center gap-1.5 bg-yellow-400 hover:bg-yellow-350 text-slate-950 px-4 py-2.5 rounded border-2 border-slate-900 text-xs font-black uppercase tracking-wider transition-all shadow-[3px_3px_0px_#000] active:translate-y-0.5 cursor-pointer"
+          >
+            <Plus className="w-4 h-4 stroke-[3px]" /> THÊM TRẬN ĐẤU MỚI
+          </button>
+        </div>
       </div>
 
       {/* EXPANDABLE ADD MATCH FORM */}
@@ -286,8 +304,8 @@ export default function MatchList({
                       /* EDIT SCORE CONTAINER */
                       <div className="flex items-center gap-1 bg-yellow-50 p-1.5 rounded border-2 border-slate-900">
                         <input
-                          type="number"
-                          placeholder="スコアA"
+                          type="text"
+                          placeholder="A"
                           value={editScores[m.id].scoreA}
                           onChange={(e) =>
                             setEditScores({
@@ -298,12 +316,12 @@ export default function MatchList({
                               }
                             })
                           }
-                          className="w-8 h-8 rounded text-center text-sm font-black bg-white border-2 border-slate-900 text-slate-900"
+                          className="w-12 h-8 rounded text-center text-sm font-black bg-white border-2 border-slate-900 text-slate-900"
                         />
                         <span className="text-slate-900 font-black text-xs">-</span>
                         <input
-                          type="number"
-                          placeholder="スコアB"
+                          type="text"
+                          placeholder="B"
                           value={editScores[m.id].scoreB}
                           onChange={(e) =>
                             setEditScores({
@@ -314,7 +332,7 @@ export default function MatchList({
                               }
                             })
                           }
-                          className="w-8 h-8 rounded text-center text-sm font-black bg-white border-2 border-slate-900 text-slate-900"
+                          className="w-12 h-8 rounded text-center text-sm font-black bg-white border-2 border-slate-900 text-slate-900"
                         />
                       </div>
                     ) : (

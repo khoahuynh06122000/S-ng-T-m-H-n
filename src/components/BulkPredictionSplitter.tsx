@@ -20,8 +20,8 @@ export default function BulkPredictionSplitter({
   const [selectedMatchId, setSelectedMatchId] = useState<string>('');
   const [searchQuery, setSearchQuery] = useState('');
   
-  // Local state representing the mapping of participantId -> 'A' | 'B'
-  const [choices, setChoices] = useState<Record<string, 'A' | 'B'>>({});
+  // Local state representing the mapping of participantId -> 'A' | 'B' | null
+  const [choices, setChoices] = useState<Record<string, 'A' | 'B' | null>>({});
 
   // Auto-select first unplayed match on mount
   useEffect(() => {
@@ -37,13 +37,12 @@ export default function BulkPredictionSplitter({
   useEffect(() => {
     if (!selectedMatchId) return;
 
-    const initialChoices: Record<string, 'A' | 'B'> = {};
+    const initialChoices: Record<string, 'A' | 'B' | null> = {};
     
-    // Default everyone to 'B' first as requested by the user, 
-    // or populate with their existing choice if they had one stored
+    // Populate with their existing choice if they had one stored, or default to null (unvoted)
     participants.forEach(p => {
       const existing = predictions.find(pred => pred.matchId === selectedMatchId && pred.participantId === p.id);
-      initialChoices[p.id] = existing ? existing.choice : 'B';
+      initialChoices[p.id] = existing ? existing.choice : null;
     });
 
     setChoices(initialChoices);
@@ -53,16 +52,27 @@ export default function BulkPredictionSplitter({
 
   if (!currentMatch) return null;
 
-  // Toggle single member choice
+  // Toggle single member choice: null -> 'A' -> 'B' -> null
   const toggleChoice = (pId: string) => {
-    setChoices(prev => ({
-      ...prev,
-      [pId]: prev[pId] === 'A' ? 'B' : 'A',
-    }));
+    setChoices(prev => {
+      const current = prev[pId];
+      let next: 'A' | 'B' | null = null;
+      if (current === undefined || current === null) {
+        next = 'A';
+      } else if (current === 'A') {
+        next = 'B';
+      } else {
+        next = null;
+      }
+      return {
+        ...prev,
+        [pId]: next,
+      };
+    });
   };
 
   // Set individual choice directly
-  const setIndividualChoice = (pId: string, choice: 'A' | 'B') => {
+  const setIndividualChoice = (pId: string, choice: 'A' | 'B' | null) => {
     setChoices(prev => ({
       ...prev,
       [pId]: choice,
@@ -86,10 +96,23 @@ export default function BulkPredictionSplitter({
     setChoices(updated);
   };
 
+  const setAllToNone = () => {
+    const updated = { ...choices };
+    participants.forEach(p => {
+      updated[p.id] = null;
+    });
+    setChoices(updated);
+  };
+
   const invertAll = () => {
     const updated = { ...choices };
     participants.forEach(p => {
-      updated[p.id] = updated[p.id] === 'A' ? 'B' : 'A';
+      const current = updated[p.id];
+      if (current === 'A') {
+        updated[p.id] = 'B';
+      } else if (current === 'B') {
+        updated[p.id] = 'A';
+      }
     });
     setChoices(updated);
   };
@@ -104,15 +127,24 @@ export default function BulkPredictionSplitter({
   // Count distribution
   const countA = participants.filter(p => choices[p.id] === 'A').length;
   const countB = participants.filter(p => choices[p.id] === 'B').length;
+  const countNone = participants.filter(p => !choices[p.id]).length;
 
   const handleSave = () => {
-    const payload = participants.map(p => ({
-      participantId: p.id,
-      choice: choices[p.id] || 'B'
-    }));
+    // Only save participants who actually made a choice A or B
+    const payload: { participantId: string; choice: 'A' | 'B' }[] = [];
+    
+    participants.forEach(p => {
+      const choice = choices[p.id];
+      if (choice === 'A' || choice === 'B') {
+        payload.push({
+          participantId: p.id,
+          choice: choice
+        });
+      }
+    });
 
     onSaveAllPredictions(payload, selectedMatchId);
-    alert(`Đã lưu phân chia cho 28 thành viên PKT thành công! \n- ${currentMatch.teamA}: ${countA} người \n- ${currentMatch.teamB}: ${countB} người`);
+    alert(`Đã lưu phân chia cho 28 thành viên PKT thành công! \n- ${currentMatch.teamA}: ${countA} người \n- ${currentMatch.teamB}: ${countB} người \n- Chưa chốt vote: ${countNone} người`);
     onClose();
   };
 
@@ -133,7 +165,7 @@ export default function BulkPredictionSplitter({
                 CHIA NHANH VOTE CHO 28 SẾP VÀ NHÂN VIÊN PKT ⚡
               </h3>
               <p className="text-[10px] text-indigo-200 uppercase tracking-widest font-black">
-                Chọn ai vote Đội A - Tất cả những người còn lại sẽ tự động điền Đội B
+                Chọn người vote Đội A, Đội B hoặc trạng thái Chưa vote xoay vòng linh hoạt
               </p>
             </div>
           </div>
@@ -146,8 +178,7 @@ export default function BulkPredictionSplitter({
         </div>
 
         {/* CONTAINER WORKPLACE */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 bg-slate-50">
-          
+        <div className="p-5 flex-1 overflow-y-auto space-y-5">
           {/* STEP 1: CHOOSE TARGET MATCH & INSTRUCTIONS */}
           <div className="bg-white p-5 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#1E293B] space-y-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
@@ -155,8 +186,8 @@ export default function BulkPredictionSplitter({
                 <span className="px-2 py-0.5 bg-slate-900 text-white rounded text-[10px]">1</span> CHỌN TRẬN ĐẤU CẦN ĐIỀN VOTE:
               </span>
               
-              <div className="text-[11px] font-bold text-slate-500 italic bg-amber-50 border border-amber-200 px-3 py-1 rounded">
-                💡 Người được chọn xanh sẽ là Đội A, người không được chọn (xám/trắng) sẽ là Đội B.
+              <div className="text-[11px] font-bold text-slate-700 italic bg-amber-50 border border-amber-200 px-3 py-1.5 rounded">
+                💡 Click 1 lần chọn <strong className="text-blue-600">{currentMatch.teamA.split(' ')[0]} (Đội A)</strong>, click 2 lần chọn <strong className="text-red-600">{currentMatch.teamB.split(' ')[0]} (Đội B)</strong>, click tiếp để quay về <strong className="text-slate-500">Chưa chọn</strong>.
               </div>
             </div>
 
@@ -176,30 +207,41 @@ export default function BulkPredictionSplitter({
               </div>
 
               {/* LIVE RATIO PREVIEW PANEL */}
-              <div className="p-2 border-2 border-slate-900 rounded-lg bg-slate-950 text-white flex items-center justify-between overflow-hidden">
+              <div className="p-2 border-2 border-slate-900 rounded-lg bg-slate-950 text-white flex items-center justify-between overflow-hidden gap-1.5">
                 {/* Team A side */}
-                <div className="flex-1 text-center p-1.5 bg-blue-900/45 rounded">
-                  <div className="text-[9px] uppercase tracking-widest text-sky-400 font-extrabold">{currentMatch.teamA}</div>
-                  <div className="text-lg font-black text-white font-mono">{countA} người</div>
-                  <div className="text-[8px] text-slate-350 uppercase font-bold">({Math.round(countA/28*100)}% vote)</div>
+                <div className="flex-1 text-center p-1.5 bg-blue-900/40 rounded">
+                  <div className="text-[9px] uppercase tracking-widest text-sky-400 font-extrabold truncate">{currentMatch.teamA}</div>
+                  <div className="text-sm md:text-base font-black text-white font-mono">{countA} người</div>
+                  <div className="text-[8px] text-slate-350 uppercase font-bold">({Math.round(countA/28*100) || 0}% vote)</div>
                 </div>
 
-                <div className="px-3 text-center">
-                  <ArrowRightLeft className="w-4 h-4 text-slate-400 rotate-0" />
+                <div className="px-1 text-center">
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
                 </div>
 
                 {/* Team B side */}
                 <div className="flex-1 text-center p-1.5 bg-red-900/40 rounded">
-                  <div className="text-[9px] uppercase tracking-widest text-[#F87171] font-extrabold">{currentMatch.teamB}</div>
-                  <div className="text-lg font-black text-white font-mono">{countB} người</div>
-                  <div className="text-[8px] text-slate-350 uppercase font-bold">({Math.round(countB/28*100)}% vote)</div>
+                  <div className="text-[9px] uppercase tracking-widest text-[#F87171] font-extrabold truncate">{currentMatch.teamB}</div>
+                  <div className="text-sm md:text-base font-black text-white font-mono">{countB} người</div>
+                  <div className="text-[8px] text-slate-350 uppercase font-bold">({Math.round(countB/28*100) || 0}% vote)</div>
+                </div>
+
+                <div className="px-1 text-center">
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-500" />
+                </div>
+
+                {/* Not Voted side */}
+                <div className="flex-1 text-center p-1.5 bg-slate-800/60 rounded">
+                  <div className="text-[9px] uppercase tracking-widest text-slate-400 font-extrabold truncate">Chưa vote</div>
+                  <div className="text-sm md:text-base font-black text-white font-mono">{countNone} người</div>
+                  <div className="text-[8px] text-slate-350 uppercase font-bold">({Math.round(countNone/28*100) || 0}%)</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* QUICK BULK ASSIGNER CONTROLS */}
-          <div className="flex flex-flow md:flex-row flex-wrap gap-2.5 items-center justify-between">
+          <div className="flex flex-col md:flex-row flex-wrap gap-2.5 items-center justify-between">
             <div className="flex flex-wrap gap-2">
               <button
                 type="button"
@@ -214,6 +256,13 @@ export default function BulkPredictionSplitter({
                 className="px-3 py-1.5 text-xs font-black uppercase rounded border-2 border-slate-950 bg-blue-50 hover:bg-blue-100 shadow-[2px_2px_0px_#000] cursor-pointer text-blue-900 flex items-center gap-1.5"
               >
                 🔵 Cho tất cả vote {currentMatch.teamA}
+              </button>
+              <button
+                type="button"
+                onClick={setAllToNone}
+                className="px-3 py-1.5 text-xs font-black uppercase rounded border-2 border-slate-950 bg-amber-50 hover:bg-amber-100 shadow-[2px_2px_0px_#000] cursor-pointer text-amber-900 flex items-center gap-1.5"
+              >
+                ⏳ Cho tất cả chưa vote (Reset)
               </button>
               <button
                 type="button"
@@ -249,16 +298,25 @@ export default function BulkPredictionSplitter({
             {/* GRID LAYOUT */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2.5 max-h-[380px] overflow-y-auto pr-1">
               {filteredParticipants.map((p) => {
-                const isVoteA = choices[p.id] === 'A';
+                const choice = choices[p.id];
+                const isVoteA = choice === 'A';
+                const isVoteB = choice === 'B';
+                const isNone = choice === null || choice === undefined;
+
+                let cardClasses = '';
+                if (isVoteA) {
+                  cardClasses = 'bg-blue-50 border-blue-500 shadow-[3px_3px_0px_rgba(59,130,246,0.3)]';
+                } else if (isVoteB) {
+                  cardClasses = 'bg-red-50 border-red-500 shadow-[3px_3px_0px_rgba(239,68,68,0.3)]';
+                } else {
+                  cardClasses = 'bg-white border-slate-200 hover:border-slate-400 hover:shadow-[3px_3px_0px_rgba(0,0,0,0.05)]';
+                }
+
                 return (
                   <div
                     key={p.id}
                     onClick={() => toggleChoice(p.id)}
-                    className={`p-2.5 rounded-xl border-3 transition-all cursor-pointer flex flex-col justify-between h-[85px] relative ${
-                      isVoteA
-                        ? 'bg-blue-50 border-blue-650 border-blue-500 shadow-[3px_3px_0px_rgba(59,130,246,0.3)]'
-                        : 'bg-white border-slate-200 hover:border-slate-400 hover:shadow-[3px_3px_0px_rgba(0,0,0,0.05)]'
-                    }`}
+                    className={`p-2.5 rounded-xl border-3 transition-all cursor-pointer flex flex-col justify-between h-[85px] relative ${cardClasses}`}
                   >
                     {/* Upper Line: color tag & name */}
                     <div className="flex items-center gap-2">
@@ -277,22 +335,30 @@ export default function BulkPredictionSplitter({
                       {/* Display Label choice */}
                       <span className={`text-[9.5px] px-2.5 py-0.5 rounded border font-black uppercase tracking-tight ${
                         isVoteA 
-                          ? 'bg-blue-500 text-white border-blue-700' 
-                          : 'bg-slate-100 text-slate-700 border-slate-300'
+                          ? 'bg-blue-500 text-white border-blue-700 font-black' 
+                          : isVoteB
+                            ? 'bg-red-500 text-white border-red-700 font-black'
+                            : 'bg-slate-100 text-slate-550 text-slate-500 border-slate-300'
                       }`}>
-                        {isVoteA ? currentMatch.teamA.split(' ')[0] : currentMatch.teamB.split(' ')[0]}
+                        {isVoteA 
+                          ? currentMatch.teamA.split(' ')[0] 
+                          : isVoteB 
+                            ? currentMatch.teamB.split(' ')[0] 
+                            : 'CHƯA CHỌN ⏳'}
                       </span>
                     </div>
 
-                    {/* Small checkbox indicating Team A selection */}
-                    <div className="absolute top-2.5 right-2.5">
-                      <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                    {/* Status Badge Tag indicating Team choice */}
+                    <div className="absolute top-2.5 right-2.5 select-none pointer-events-none">
+                      <span className={`text-[8.5px] px-1.5 py-0.2 rounded font-mono font-black border uppercase shadow-[1px_1px_0px_rgba(0,0,0,0.1)] ${
                         isVoteA 
-                          ? 'bg-blue-500 border-blue-700 text-white' 
-                          : 'bg-white border-slate-350'
+                          ? 'bg-blue-600 border-blue-800 text-white' 
+                          : isVoteB
+                            ? 'bg-red-600 border-red-800 text-white'
+                            : 'bg-slate-200 border-slate-350 text-slate-500 font-bold'
                       }`}>
-                        {isVoteA && <Check className="w-3.5 h-3.5 stroke-[3px]" />}
-                      </div>
+                        {isVoteA ? 'Đội A' : isVoteB ? 'Đội B' : 'Trực tiếp'}
+                      </span>
                     </div>
 
                   </div>
@@ -308,10 +374,10 @@ export default function BulkPredictionSplitter({
           </div>
 
           {/* ATTENTION INFO CARD */}
-          <div className="p-3.5 bg-yellow-50 rounded-lg border-2 border-yellow-250 border-yellow-200 flex items-start gap-2.5 text-xs text-yellow-950 font-sans">
+          <div className="p-3.5 bg-yellow-50 rounded-lg border-2 border-yellow-200 flex items-start gap-2.5 text-xs text-yellow-950 font-sans">
             <Info className="w-4 h-4 shrink-0 text-yellow-700 mt-0.5" />
             <div className="font-bold leading-relaxed">
-              <strong>Quy chế chia cực nhanh:</strong> Bạn chỉ cần tích chọn những ai vote cho <strong className="text-blue-600 uppercase">{currentMatch.teamA}</strong> (sau khi xem ảnh rạp chat Viber). Với tất cả những người không tích, hệ thống sẽ tự động điền họ vote cho <strong className="text-slate-800 uppercase">{currentMatch.teamB}</strong> khi bạn nhấn lưu! Tiết kiệm 100% sức lực click lẻ loi.
+              <strong>Hướng dẫn chia vote 3 chế độ:</strong> Click liên tiếp vào ô thành viên để chuyển trạng thái xoay vòng: <em className="text-indigo-600 font-black">[Chưa chọn ⏳] ➡️ [Đội A 🔵] ➡️ [Đội B 🔴] ➡️ [Chưa chọn ⏳]</em>. Mục nào chọn Chưa chọn sẽ không lưu vote cho trận đấu đó (tránh ép buộc điền Đội B như trước). Nhấn nút Lưu khi hoàn thành!
             </div>
           </div>
 
@@ -335,7 +401,7 @@ export default function BulkPredictionSplitter({
               className="flex-1 sm:flex-none px-6 py-2 rounded text-xs bg-emerald-600 hover:bg-emerald-700 hover:-translate-y-0.5 active:translate-y-0 text-white border-2 border-slate-950 font-black uppercase tracking-wider shadow-[3px_3px_0px_#000] cursor-pointer inline-flex items-center justify-center gap-1.5 transition-all"
             >
               <CheckSquare className="w-4 h-4 shrink-0" />
-              Lưu toàn bộ 28 dự đoán
+              Lưu toàn bộ dự đoán
             </button>
           </div>
         </div>

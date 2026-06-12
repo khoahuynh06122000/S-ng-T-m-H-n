@@ -194,18 +194,16 @@ export default function App() {
       snap.forEach((d) => {
         list.push(d.data() as Match);
       });
-      if (list.length > 0) {
-        const sortedList = [...list].sort((a, b) => {
-          const timeA = new Date(a.dateTime || '').getTime();
-          const timeB = new Date(b.dateTime || '').getTime();
-          if (timeA !== timeB) return timeA - timeB;
-          const idA = parseInt(a.id.replace(/\D/g, '')) || 0;
-          const idB = parseInt(b.id.replace(/\D/g, '')) || 0;
-          return idA - idB;
-        });
-        setMatches(sortedList);
-        localStorage.setItem('wc_office_matches', JSON.stringify(sortedList));
-      }
+      const sortedList = [...list].sort((a, b) => {
+        const timeA = new Date(a.dateTime || '').getTime();
+        const timeB = new Date(b.dateTime || '').getTime();
+        if (timeA !== timeB) return timeA - timeB;
+        const idA = parseInt(a.id.replace(/\D/g, '')) || 0;
+        const idB = parseInt(b.id.replace(/\D/g, '')) || 0;
+        return idA - idB;
+      });
+      setMatches(sortedList);
+      localStorage.setItem('wc_office_matches', JSON.stringify(sortedList));
     }, (error) => {
       handleFirestoreError(error, OperationType.LIST, 'matches');
     });
@@ -355,6 +353,31 @@ export default function App() {
       await batch.commit();
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `delete-match-${mId}`);
+    }
+  };
+
+  const handleClearAllMatches = async () => {
+    if (!window.confirm('Hành động này sẽ XÓA TOÀN BỘ các trận đấu và tất cả các dự đoán (vote) tương ứng khỏi hệ thống! Bạn có chắc chắn muốn tiếp tục không?')) {
+      return;
+    }
+
+    setMatches([]);
+    setPredictions([]);
+    localStorage.setItem('wc_office_matches', JSON.stringify([]));
+    localStorage.setItem('wc_office_predictions', JSON.stringify([]));
+
+    try {
+      const batch = writeBatch(db);
+      const matchesSnap = await getDocs(collection(db, 'matches'));
+      matchesSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+      const predictionsSnap = await getDocs(collection(db, 'predictions'));
+      predictionsSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+
+      await batch.commit();
+      console.log('Cleared all matches and predictions from database.');
+    } catch (error) {
+      handleFirestoreError(error, OperationType.WRITE, 'clear-all-matches');
     }
   };
 
@@ -855,6 +878,7 @@ export default function App() {
               onUpdateMatchScore={handleUpdateMatchScore}
               onAddMatch={handleAddMatch}
               onDeleteMatch={handleDeleteMatch}
+              onClearAllMatches={handleClearAllMatches}
             />
           )}
 

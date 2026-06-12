@@ -66,11 +66,11 @@ export function getPenaltyForStage(stage: string): number {
  */
 export function calculatePoints(
   pred: Prediction | undefined,
-  match: Match,
+  match: Match | undefined,
   config: ScoringConfig
 ): { points: number; status: 'exact' | 'outcome' | 'wrong' | 'unplayed' } {
-  // If match has not been played yet
-  if (match.scoreA === null || match.scoreB === null) {
+  // If match has not been played yet or is undefined
+  if (!match || match.scoreA === null || match.scoreB === null) {
     return { points: 0, status: 'unplayed' };
   }
 
